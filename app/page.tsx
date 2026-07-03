@@ -202,6 +202,18 @@ export default function DashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (res.ok) {
+        setUser(null);
+        router.push('/login');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#07080c] text-gray-200 antialiased font-sans select-none">
       
@@ -229,7 +241,7 @@ export default function DashboardPage() {
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Home
+              Dashboard
             </button>
             <button
               onClick={() => setActiveView('workspace')}
@@ -258,6 +270,39 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto">
           <Sidebar activeView={activeView} setActiveView={setActiveView} />
         </div>
+
+        {/* User Profile & Logout Panel */}
+        {user && (
+          <div className="p-4 border-t border-white/[0.04] bg-white/[0.002] flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white uppercase shadow-[0_0_8px_rgba(99,102,241,0.2)]">
+                {user.username.slice(0, 2)}
+              </div>
+              <div className="flex flex-col overflow-hidden text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-gray-200 truncate">{user.username}</span>
+                  {user.role === 'admin' && (
+                    <button 
+                      onClick={() => setActiveView('admin')}
+                      title="Open Admin Panel"
+                      className="text-amber-400 hover:text-amber-300 transition text-[10px] cursor-pointer"
+                    >
+                      🛡️
+                    </button>
+                  )}
+                </div>
+                <span className="text-[9px] text-gray-500 uppercase font-semibold tracking-wider">{user.role}</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleLogout}
+              className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Main Panel workstation layout */}
