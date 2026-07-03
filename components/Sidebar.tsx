@@ -306,7 +306,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
               />
             ) : (
               <span 
-                className="font-semibold text-gray-200 truncate max-w-[130px]"
+                className="font-semibold text-slate-800 dark:text-gray-200 truncate max-w-[130px]"
                 onDoubleClick={(e) => {
                   if (isSharedSection && !isOwnerOrAdmin) return;
                   e.stopPropagation();
@@ -473,7 +473,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                 <div
                   key={req.id}
                   className={`flex items-center justify-between px-3 py-2.5 border-t border-white/[0.02] cursor-pointer group transition duration-150 ${
-                    isTabActive ? 'bg-violet-950/20 text-violet-300 font-medium' : 'hover:bg-white/[0.02] text-gray-400'
+                    isTabActive ? 'bg-violet-950/20' : 'hover:bg-white/[0.02]'
                   }`}
                   style={{ borderLeft: isTabActive ? '2px solid var(--accent-primary)' : '2px solid transparent' }}
                   onClick={() => {
@@ -501,7 +501,9 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                       />
                     ) : (
                       <span 
-                        className="truncate max-w-[130px] text-xs"
+                        className={`truncate max-w-[130px] text-xs transition-colors duration-150 ${
+                          isTabActive ? 'text-violet-700 dark:text-violet-300 font-semibold' : 'text-gray-700 dark:text-gray-400'
+                        }`}
                         onDoubleClick={(e) => {
                           e.stopPropagation();
                           setEditingReqId(req.id);
