@@ -61,10 +61,10 @@ interface ApiStoreState {
   setUser: (user: { id: string; username: string; role: string } | null) => void;
   fetchData: () => Promise<void>;
   
-  addCollection: (name: string) => Promise<void>;
+  addCollection: (name: string) => Promise<Collection | null>;
   deleteCollection: (id: string) => Promise<void>;
   updateCollection: (id: string, updates: Partial<Collection>) => Promise<void>;
-  addRequestToCollection: (collectionId: string, request: Partial<RequestModel>) => Promise<void>;
+  addRequestToCollection: (collectionId: string, request: Partial<RequestModel>) => Promise<RequestModel | null>;
   updateRequest: (requestId: string, updates: Partial<RequestModel>) => Promise<void>;
   deleteRequest: (collectionId: string, requestId: string) => Promise<void>;
   
@@ -117,6 +117,7 @@ export const useApiStore = create<ApiStoreState>()(
 
       addCollection: async (name) => {
         const tempId = crypto.randomUUID();
+        let createdCol: Collection | null = null;
         set((state) => ({
           collections: [...state.collections, { id: tempId, name, requests: [] }]
         }));
@@ -132,10 +133,12 @@ export const useApiStore = create<ApiStoreState>()(
             set((state) => ({
               collections: state.collections.map((c) => c.id === tempId ? data.collection : c)
             }));
+            createdCol = data.collection;
           }
         } catch (err) {
           console.error(err);
         }
+        return createdCol;
       },
 
       deleteCollection: async (id) => {
@@ -187,9 +190,12 @@ export const useApiStore = create<ApiStoreState>()(
               return { ...col, requests: [...col.requests, defaultReq] };
             }
             return col;
-          })
+          }),
+          tabs: [...state.tabs, tempId],
+          activeTabId: tempId
         }));
 
+        let createdReq: RequestModel | null = null;
         try {
           const res = await fetch(`/api/collections/${collectionId}/requests`, {
             method: 'POST',
@@ -211,10 +217,12 @@ export const useApiStore = create<ApiStoreState>()(
               tabs: state.tabs.map((t) => t === tempId ? data.request.id : t),
               activeTabId: state.activeTabId === tempId ? data.request.id : state.activeTabId
             }));
+            createdReq = data.request;
           }
         } catch (err) {
           console.error(err);
         }
+        return createdReq;
       },
 
       updateRequest: async (requestId, updates) => {

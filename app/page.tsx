@@ -11,9 +11,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AdminPanel from '@/components/AdminPanel';
 import Dashboard from '@/components/Dashboard';
+import Swal from 'sweetalert2';
 
 export default function DashboardPage() {
-  const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading } = useApiStore();
+  const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading, addCollection, addRequestToCollection } = useApiStore();
   const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard'>('dashboard');
   const router = useRouter();
 
@@ -49,6 +50,155 @@ export default function DashboardPage() {
       case 'DELETE': return 'bg-rose-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]';
       case 'PATCH': return 'bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.4)]';
       default: return 'bg-gray-500';
+    }
+  };
+
+  const handleCreateRequestClick = async () => {
+    if (collections.length === 0) {
+      const { value: colName } = await Swal.fire({
+        title: 'Create Your First Collection',
+        text: 'You need a collection to organize your requests. Please enter a collection name:',
+        input: 'text',
+        inputPlaceholder: 'e.g. My API Collection',
+        showCancelButton: true,
+        background: '#0c0d14',
+        color: '#e2e8f0',
+        confirmButtonText: 'Create Collection',
+        customClass: {
+          popup: 'border border-white/[0.06] rounded-2xl shadow-2xl backdrop-blur-2xl font-sans',
+          title: 'text-base font-bold text-white pt-4',
+          htmlContainer: 'text-xs text-gray-400 mt-2',
+          input: 'bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-4 py-2 text-white outline-none text-xs w-5/6 mx-auto',
+          confirmButton: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 shadow-[0_0_12px_rgba(139,92,246,0.3)]',
+          cancelButton: 'px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-gray-300 text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 ml-3',
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+          if (!value.trim()) {
+            return 'Collection name cannot be empty!';
+          }
+          return null;
+        }
+      });
+
+      if (!colName || !colName.trim()) return;
+
+      Swal.fire({
+        title: 'Creating Collection...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        const newCol = await addCollection(colName.trim());
+        if (newCol) {
+          await addRequestToCollection(newCol.id, {
+            name: 'New Request',
+            method: 'GET',
+            url: '',
+            headers: [],
+            params: [],
+            bodyType: 'none',
+            body: '',
+            auth: { type: 'none' }
+          });
+          setActiveView('workspace');
+        }
+        Swal.close();
+      } catch (err) {
+        Swal.close();
+        console.error(err);
+      }
+    } else {
+      const collectionOptions = collections.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      
+      const { value: formValues } = await Swal.fire({
+        title: 'Create New Request',
+        html: `
+          <div class="flex flex-col gap-3 text-left px-4 font-sans text-xs">
+            <div class="flex flex-col gap-1">
+              <label class="text-gray-400 font-semibold">Request Name</label>
+              <input id="swal-req-name" class="swal2-input bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-3 py-2 text-white outline-none text-xs w-full m-0" value="Untitled Request">
+            </div>
+            <div class="flex gap-2">
+              <div class="flex flex-col gap-1 w-1/3">
+                <label class="text-gray-400 font-semibold">Method</label>
+                <select id="swal-req-method" class="swal2-input bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-3 py-2 text-white outline-none text-xs w-full m-0">
+                  <option value="GET">GET</option>
+                  <option value="POST">POST</option>
+                  <option value="PUT">PUT</option>
+                  <option value="DELETE">DELETE</option>
+                  <option value="PATCH">PATCH</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1 w-2/3">
+                <label class="text-gray-400 font-semibold">Collection</label>
+                <select id="swal-req-col" class="swal2-input bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-3 py-2 text-white outline-none text-xs w-full m-0">
+                  ${collectionOptions}
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-gray-400 font-semibold">URL (Optional)</label>
+              <input id="swal-req-url" class="swal2-input bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-3 py-2 text-white outline-none text-xs w-full m-0" placeholder="https://api.example.com/endpoint">
+            </div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        background: '#0c0d14',
+        color: '#e2e8f0',
+        confirmButtonText: 'Create Request',
+        customClass: {
+          popup: 'border border-white/[0.06] rounded-2xl shadow-2xl backdrop-blur-2xl font-sans max-w-sm',
+          title: 'text-base font-bold text-white pt-4 pb-2',
+          confirmButton: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 shadow-[0_0_12px_rgba(139,92,246,0.3)]',
+          cancelButton: 'px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-gray-300 text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 ml-3',
+        },
+        buttonsStyling: false,
+        preConfirm: () => {
+          const name = (document.getElementById('swal-req-name') as HTMLInputElement).value;
+          const method = (document.getElementById('swal-req-method') as HTMLSelectElement).value;
+          const colId = (document.getElementById('swal-req-col') as HTMLSelectElement).value;
+          const url = (document.getElementById('swal-req-url') as HTMLInputElement).value;
+          
+          if (!name.trim()) {
+            Swal.showValidationMessage('Request name cannot be empty');
+            return false;
+          }
+          return { name, method, colId, url };
+        }
+      });
+
+      if (!formValues) return;
+
+      Swal.fire({
+        title: 'Creating Request...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        await addRequestToCollection(formValues.colId, {
+          name: formValues.name.trim(),
+          method: formValues.method as any,
+          url: formValues.url.trim(),
+          headers: [],
+          params: [],
+          bodyType: 'none',
+          body: '',
+          auth: { type: 'none' }
+        });
+        setActiveView('workspace');
+        Swal.close();
+      } catch (err) {
+        Swal.close();
+        console.error(err);
+      }
     }
   };
 
@@ -214,10 +364,7 @@ export default function DashboardPage() {
 
                 <div className="flex gap-3 mt-6">
                   <button 
-                    onClick={() => {
-                      const btn = document.querySelector('[title="Add Request"]') as HTMLButtonElement;
-                      if (btn) btn.click();
-                    }}
+                    onClick={handleCreateRequestClick}
                     className="btn-primary"
                   >
                     Create Request

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApiStore } from '@/store/useApiStore';
+import Swal from 'sweetalert2';
 
 interface DashboardStats {
   totalCollections: number;
@@ -176,12 +177,53 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
               )}
               <button
                 className="bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/10 hover:border-emerald-500/30 rounded-xl p-3.5 flex flex-col items-center gap-2 transition-all duration-200 group cursor-pointer"
-                onClick={() => {
-                  setActiveView('workspace');
-                  setTimeout(() => {
-                    const btn = document.querySelector('[title="Add Collection"]') as HTMLButtonElement;
-                    if (btn) btn.click();
-                  }, 200);
+                onClick={async () => {
+                  const { addCollection } = useApiStore.getState();
+                  
+                  const { value: colName } = await Swal.fire({
+                    title: 'Create New Collection',
+                    text: 'Please enter a name for your new collection:',
+                    input: 'text',
+                    inputPlaceholder: 'e.g. My API Collection',
+                    showCancelButton: true,
+                    background: '#0c0d14',
+                    color: '#e2e8f0',
+                    confirmButtonText: 'Create Collection',
+                    customClass: {
+                      popup: 'border border-white/[0.06] rounded-2xl shadow-2xl backdrop-blur-2xl font-sans',
+                      title: 'text-base font-bold text-white pt-4',
+                      htmlContainer: 'text-xs text-gray-400 mt-2',
+                      input: 'bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-4 py-2 text-white outline-none text-xs w-5/6 mx-auto',
+                      confirmButton: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 shadow-[0_0_12px_rgba(139,92,246,0.3)]',
+                      cancelButton: 'px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-gray-300 text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 ml-3',
+                    },
+                    buttonsStyling: false,
+                    inputValidator: (value) => {
+                      if (!value.trim()) {
+                        return 'Collection name cannot be empty!';
+                      }
+                      return null;
+                    }
+                  });
+
+                  if (!colName || !colName.trim()) return;
+
+                  Swal.fire({
+                    title: 'Creating Collection...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                      Swal.showLoading();
+                    }
+                  });
+
+                  try {
+                    await addCollection(colName.trim());
+                    setActiveView('workspace');
+                    Swal.close();
+                  } catch (err) {
+                    Swal.close();
+                    console.error(err);
+                  }
                 }}
               >
                 <span className="text-xl group-hover:scale-110 transition-transform duration-200">➕</span>
