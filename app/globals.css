@@ -657,3 +657,14 @@ html.light .swal2-cancel {
   color: var(--text-secondary) !important;
   border: 1px solid var(--border-default) !important;
 }
+
+/* Clock & role badge light overrides */
+html.light .text-white\/80 {
+  color: var(--text-primary) !important;
+}
+html.light .border-violet-500\/30 {
+  border-color: rgba(124, 58, 237, 0.25) !important;
+}
+html.light .border-emerald-500\/30 {
+  border-color: rgba(5, 150, 105, 0.25) !important;
+}
