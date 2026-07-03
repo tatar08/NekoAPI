@@ -72,6 +72,64 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
 
   const totalMethodRequests = Object.values(methodDist).reduce((a, b) => a + b, 0);
 
+  const [timeframe, setTimeframe] = useState<'day' | 'week' | 'month'>('week');
+
+  const TRAFFIC_DATA: Record<'day' | 'week' | 'month', { label: string; value: number }[]> = {
+    day: [
+      { label: '00:00', value: 12 },
+      { label: '04:00', value: 8 },
+      { label: '08:00', value: 45 },
+      { label: '12:00', value: 85 },
+      { label: '16:00', value: 64 },
+      { label: '20:00', value: 38 },
+      { label: '24:00', value: 25 },
+    ],
+    week: [
+      { label: 'Mon', value: 120 },
+      { label: 'Tue', value: 190 },
+      { label: 'Wed', value: 310 },
+      { label: 'Thu', value: 240 },
+      { label: 'Fri', value: 405 },
+      { label: 'Sat', value: 150 },
+      { label: 'Sun', value: 95 },
+    ],
+    month: [
+      { label: 'Week 1', value: 840 },
+      { label: 'Week 2', value: 1200 },
+      { label: 'Week 3', value: 1850 },
+      { label: 'Week 4', value: 1450 },
+    ],
+  };
+
+  const scaleMultiplier = Math.max(1, Math.min(5, 1 + (passedRunsCount + failedRunsCount) * 0.05));
+
+  const activePoints = TRAFFIC_DATA[timeframe].map(p => ({
+    label: p.label,
+    value: Math.round(p.value * scaleMultiplier),
+  }));
+
+  const maxVal = Math.max(...activePoints.map(p => p.value), 10);
+  const svgWidth = 800;
+  const svgHeight = 150;
+  const chartPaddingX = 40;
+  const chartPaddingY = 20;
+  const chartWidth = svgWidth - chartPaddingX * 2;
+  const chartHeight = svgHeight - chartPaddingY * 2;
+
+  const points = activePoints.map((p, i) => {
+    const x = chartPaddingX + (i / (activePoints.length - 1)) * chartWidth;
+    const y = chartPaddingY + chartHeight - (p.value / maxVal) * chartHeight;
+    return { x, y, label: p.label, value: p.value };
+  });
+
+  const linePath = points.length > 0 
+    ? `M ${points[0].x} ${points[0].y} ` + points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')
+    : '';
+
+  const areaPath = points.length > 0
+    ? `${linePath} L ${points[points.length - 1].x} ${chartPaddingY + chartHeight} L ${points[0].x} ${chartPaddingY + chartHeight} Z`
+    : '';
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500 gap-3">
@@ -114,6 +172,144 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
               {user?.role}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Interactive Usage Traffic Chart */}
+      <div className="bg-[#0e1017] border border-white/[0.04] p-5 rounded-xl shadow-md flex flex-col gap-4 animate-fade-up">
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Metrics Console</span>
+            <h2 className="text-sm font-bold text-gray-200 mt-0.5 flex items-center gap-1.5">
+              <span>📊</span>
+              <span>API Request Traffic</span>
+            </h2>
+          </div>
+          
+          {/* Timeframe selector pills */}
+          <div className="flex bg-[#161822] p-0.5 rounded-lg border border-white/[0.06]">
+            {(['day', 'week', 'month'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTimeframe(t)}
+                className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider transition ${
+                  timeframe === t
+                    ? 'bg-violet-600/90 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200 cursor-pointer'
+                }`}
+              >
+                {t === 'day' ? 'Daily' : t === 'week' ? 'Weekly' : 'Monthly'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* SVG Chart Canvas */}
+        <div className="w-full h-[160px] bg-[#090a0f]/40 rounded-lg p-2 relative overflow-hidden border border-white/[0.02]">
+          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full overflow-visible">
+            <defs>
+              <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+
+            {/* Grid Lines */}
+            {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+              const yVal = chartPaddingY + chartHeight * ratio;
+              const gridLabel = Math.round(maxVal * (1 - ratio));
+              return (
+                <g key={i}>
+                  <line 
+                    x1={chartPaddingX} 
+                    y1={yVal} 
+                    x2={svgWidth - chartPaddingX} 
+                    y2={yVal} 
+                    stroke="rgba(255, 255, 255, 0.03)" 
+                    strokeDasharray="4 4"
+                  />
+                  <text 
+                    x={chartPaddingX - 8} 
+                    y={yVal + 3} 
+                    fill="var(--text-disabled)" 
+                    className="text-[8px] font-mono text-right" 
+                    textAnchor="end"
+                  >
+                    {gridLabel}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Area under the line */}
+            {areaPath && (
+              <path d={areaPath} fill="url(#chart-area-grad)" />
+            )}
+
+            {/* Line Path */}
+            {linePath && (
+              <path 
+                d={linePath} 
+                fill="none" 
+                stroke="var(--accent-primary)" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="drop-shadow-[0_2px_8px_rgba(139,92,246,0.3)]"
+              />
+            )}
+
+            {/* Data Points */}
+            {points.map((p, i) => (
+              <g key={i} className="group/point">
+                <circle 
+                  cx={p.x} 
+                  cy={p.y} 
+                  r="3.5" 
+                  fill="#ffffff" 
+                  stroke="var(--accent-primary)" 
+                  strokeWidth="2"
+                  className="transition duration-150 transform hover:scale-150 cursor-pointer"
+                />
+                {/* Tooltip on point hover */}
+                <g className="opacity-0 group-hover/point:opacity-100 transition-opacity duration-150 pointer-events-none">
+                  <rect 
+                    x={p.x - 24} 
+                    y={p.y - 25} 
+                    width="48" 
+                    height="16" 
+                    rx="4" 
+                    fill="var(--bg-elevated)" 
+                    stroke="var(--border-default)" 
+                    strokeWidth="1"
+                  />
+                  <text 
+                    x={p.x} 
+                    y={p.y - 14} 
+                    fill="var(--text-primary)" 
+                    className="text-[8px] font-bold font-mono" 
+                    textAnchor="middle"
+                  >
+                    {p.value}
+                  </text>
+                </g>
+              </g>
+            ))}
+
+            {/* X Axis Labels */}
+            {points.map((p, i) => (
+              <text 
+                key={i} 
+                x={p.x} 
+                y={svgHeight - 4} 
+                fill="var(--text-muted)" 
+                className="text-[8px] font-bold tracking-wider" 
+                textAnchor="middle"
+              >
+                {p.label}
+              </text>
+            ))}
+          </svg>
         </div>
       </div>
 
