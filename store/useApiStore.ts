@@ -56,6 +56,8 @@ interface ApiStoreState {
   tabs: string[]; // List of active Request IDs
   activeTabId: string | null;
   history: { requestId: string; timestamp: number }[];
+  passedRunsCount: number;
+  failedRunsCount: number;
   
   // Actions
   setUser: (user: { id: string; username: string; role: string } | null) => void;
@@ -76,6 +78,9 @@ interface ApiStoreState {
   openTab: (requestId: string) => void;
   closeTab: (requestId: string) => void;
   setActiveTab: (requestId: string | null) => void;
+  incrementPassedRuns: (count?: number) => void;
+  incrementFailedRuns: (count?: number) => void;
+  resetRunStats: () => void;
 }
 
 export const useApiStore = create<ApiStoreState>()(
@@ -89,6 +94,8 @@ export const useApiStore = create<ApiStoreState>()(
       tabs: [],
       activeTabId: null,
       history: [],
+      passedRunsCount: 0,
+      failedRunsCount: 0,
 
       setUser: (user) => set({ user }),
 
@@ -348,14 +355,23 @@ export const useApiStore = create<ApiStoreState>()(
         };
       }),
 
-      setActiveTab: (requestId) => set({ activeTabId: requestId })
+      setActiveTab: (requestId) => set({ activeTabId: requestId }),
+      incrementPassedRuns: (count = 1) => set((state) => ({
+        passedRunsCount: state.passedRunsCount + count
+      })),
+      incrementFailedRuns: (count = 1) => set((state) => ({
+        failedRunsCount: state.failedRunsCount + count
+      })),
+      resetRunStats: () => set({ passedRunsCount: 0, failedRunsCount: 0 })
     }),
     {
       name: 'api-client-storage', // saves tabs and environment selections locally
       partialize: (state) => ({
         activeEnvironmentId: state.activeEnvironmentId,
         tabs: state.tabs,
-        activeTabId: state.activeTabId
+        activeTabId: state.activeTabId,
+        passedRunsCount: state.passedRunsCount,
+        failedRunsCount: state.failedRunsCount
       })
     }
   )

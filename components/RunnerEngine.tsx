@@ -207,6 +207,14 @@ export default function RunnerEngine() {
         }
       }
     }
+    
+    // Increment global run statistics in store
+    const passed = tempResults.filter(r => r.success).length;
+    const failed = tempResults.filter(r => !r.success).length;
+    const { incrementPassedRuns, incrementFailedRuns } = useApiStore.getState();
+    incrementPassedRuns(passed);
+    incrementFailedRuns(failed);
+
     setExecuting(false);
   };
 
