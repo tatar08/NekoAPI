@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApiStore } from '@/store/useApiStore';
+import { nekoConfirm, nekoAlert } from '@/lib/alert';
 
 interface UserData {
   id: string;
@@ -56,14 +57,15 @@ export default function AdminPanel() {
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      alert(msg);
+      nekoAlert('Error', msg, 'error');
     } finally {
       setActionLoadingId(null);
     }
   };
 
   const handleDeleteUser = async (userId: string, username: string) => {
-    if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
+    const confirmed = await nekoConfirm('Delete User?', `Are you sure you want to delete user "${username}"?`, 'Delete');
+    if (!confirmed) return;
 
     setActionLoadingId(userId);
     try {
@@ -77,7 +79,7 @@ export default function AdminPanel() {
       setUsers(prev => prev.filter(u => u.id !== userId));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      alert(msg);
+      nekoAlert('Error', msg, 'error');
     } finally {
       setActionLoadingId(null);
     }

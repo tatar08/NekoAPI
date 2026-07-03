@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useApiStore, RequestModel } from '@/store/useApiStore';
 import { resolveVariables } from '@/utils/variableResolver';
+import { nekoAlert } from '@/lib/alert';
 
 interface ExecutionResult {
   index: number;
@@ -49,7 +50,7 @@ export default function RunnerEngine() {
         setCsvData(data);
       }
     } catch {
-      alert('Could not parse imported data file. Ensure it is correct JSON or CSV.');
+      nekoAlert('Parse Error', 'Could not parse imported data file. Ensure it is correct JSON or CSV.', 'error');
     }
   };
 
@@ -88,7 +89,7 @@ export default function RunnerEngine() {
       };
       reader.readAsText(file);
     } else {
-      alert('Invalid file format. Please drop a .csv or .json file.');
+      nekoAlert('Invalid File', 'Invalid file format. Please drop a .csv or .json file.', 'warning');
     }
   };
 

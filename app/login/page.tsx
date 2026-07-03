@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { nekoAlert } from '@/lib/alert';
+
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState<string[]>(Array(8).fill(''));
@@ -91,7 +93,7 @@ export default function LoginPage() {
   };
 
   const handleFingerprintLogin = () => {
-    alert('Biometric login is not configured for this device/environment.');
+    nekoAlert('Biometrics Unavailable', 'Biometric login is not configured for this device/environment.', 'info');
   };
 
   return (
