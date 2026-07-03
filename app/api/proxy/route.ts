@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = response.headers.get('content-type') || '';
-    let responseData: any = null;
+    let responseData: unknown = null;
 
     if (contentType.includes('application/json')) {
       responseData = await response.json().catch(() => null);
@@ -60,11 +60,12 @@ export async function POST(req: NextRequest) {
       size: dataSize,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { 
         error: 'Failed to proxy request to target server', 
-        details: error.message || error 
+        details: errMessage 
       }, 
       { status: 502 }
     );

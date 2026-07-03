@@ -7,9 +7,34 @@ import RequestEditor from '@/components/RequestEditor';
 import ResponsePanel from '@/components/ResponsePanel';
 import RunnerEngine from '@/components/RunnerEngine';
 
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import AdminPanel from '@/components/AdminPanel';
+import Dashboard from '@/components/Dashboard';
+
 export default function DashboardPage() {
-  const { tabs, activeTabId, collections, setActiveTab, closeTab } = useApiStore();
-  const [showRunner, setShowRunner] = useState<boolean>(false);
+  const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading } = useApiStore();
+  const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard'>('dashboard');
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then((data) => {
+        if (data.user) {
+          setUser(data.user);
+          fetchData();
+        } else {
+          router.push('/login');
+        }
+      })
+      .catch(() => {
+        router.push('/login');
+      });
+  }, [setUser, fetchData, router]);
 
   // Helper to locate active request data across collections
   const activeRequest = collections
@@ -47,19 +72,29 @@ export default function DashboardPage() {
           {/* Toggle pill buttons */}
           <div className="flex bg-[#161822] p-0.5 rounded-lg border border-white/[0.06] shadow-inner">
             <button
-              onClick={() => setShowRunner(false)}
-              className={`px-3 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
-                !showRunner
+              onClick={() => setActiveView('dashboard')}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+                activeView === 'dashboard'
                   ? 'bg-violet-600/90 text-white shadow-md'
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Workspace
+              Home
             </button>
             <button
-              onClick={() => setShowRunner(true)}
-              className={`px-3 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
-                showRunner
+              onClick={() => setActiveView('workspace')}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+                activeView === 'workspace'
+                  ? 'bg-violet-600/90 text-white shadow-md'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Work
+            </button>
+            <button
+              onClick={() => setActiveView('runner')}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+                activeView === 'runner'
                   ? 'bg-violet-600/90 text-white shadow-md'
                   : 'text-gray-400 hover:text-gray-200'
               }`}
@@ -71,15 +106,28 @@ export default function DashboardPage() {
 
         {/* Sidebar contents list */}
         <div className="flex-1 overflow-y-auto">
-          <Sidebar />
+          <Sidebar activeView={activeView} setActiveView={setActiveView} />
         </div>
       </aside>
 
       {/* Main Panel workstation layout */}
       <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0b10] z-0">
-        {showRunner ? (
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500 gap-3">
+            <div className="spinner" />
+            <span className="text-xs font-mono">Syncing workspace records from SQLite...</span>
+          </div>
+        ) : activeView === 'runner' ? (
           <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">
             <RunnerEngine />
+          </div>
+        ) : activeView === 'admin' ? (
+          <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">
+            <AdminPanel />
+          </div>
+        ) : activeView === 'dashboard' ? (
+          <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">
+            <Dashboard setActiveView={setActiveView} />
           </div>
         ) : (
           <>
@@ -161,7 +209,7 @@ export default function DashboardPage() {
                   Ready to test some APIs?
                 </h3>
                 <p className="text-gray-500 text-xs mt-2 max-w-sm leading-relaxed">
-                  Select an existing request from the sidebar, create a collection to organize them, or click "Runner" to start automated testing runs.
+                  Select an existing request from the sidebar, create a collection to organize them, or click &quot;Runner&quot; to start automated testing runs.
                 </p>
 
                 <div className="flex gap-3 mt-6">
@@ -175,7 +223,7 @@ export default function DashboardPage() {
                     Create Request
                   </button>
                   <button
-                    onClick={() => setShowRunner(true)}
+                    onClick={() => setActiveView('runner')}
                     className="btn-ghost"
                   >
                     Open Bulk Runner

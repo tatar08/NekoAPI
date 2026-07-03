@@ -44,7 +44,9 @@ export default function RequestEditor({ request }: RequestEditorProps) {
       if (request.auth.type === 'bearer' && request.auth.bearerToken) {
         headerMap['Authorization'] = `Bearer ${activeEnv ? resolveVariables(request.auth.bearerToken, activeEnv.variables) : request.auth.bearerToken}`;
       } else if (request.auth.type === 'basic' && request.auth.basicUsername) {
-        const credentials = btoa(`${request.auth.basicUsername}:${request.auth.basicPassword || ''}`);
+        const username = activeEnv ? resolveVariables(request.auth.basicUsername, activeEnv.variables) : request.auth.basicUsername;
+        const password = request.auth.basicPassword ? (activeEnv ? resolveVariables(request.auth.basicPassword, activeEnv.variables) : request.auth.basicPassword) : '';
+        const credentials = btoa(unescape(encodeURIComponent(`${username}:${password}`)));
         headerMap['Authorization'] = `Basic ${credentials}`;
       }
 
@@ -63,13 +65,14 @@ export default function RequestEditor({ request }: RequestEditorProps) {
 
       const responseData = await res.json();
       updateRequest(request.id, { response: responseData });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       updateRequest(request.id, {
         response: {
           status: 0,
           statusText: 'Proxy Transmission Error',
           headers: {},
-          data: err.message || err,
+          data: errMsg,
           time: 0,
           size: 0
         }
@@ -124,7 +127,7 @@ export default function RequestEditor({ request }: RequestEditorProps) {
       <div className="flex gap-2 relative">
         <select
           value={request.method}
-          onChange={(e) => updateRequest(request.id, { method: e.target.value as any })}
+          onChange={(e) => updateRequest(request.id, { method: e.target.value as RequestModel['method'] })}
           className={`bg-[#11131c] border border-white/[0.06] font-bold text-xs uppercase px-4 py-2.5 rounded-lg outline-none cursor-pointer transition ${getMethodColor(request.method)}`}
         >
           <option value="GET" className="text-emerald-400">GET</option>
@@ -307,7 +310,7 @@ export default function RequestEditor({ request }: RequestEditorProps) {
               <span className="text-[10px] text-gray-500 uppercase font-semibold">JSON Request Payload</span>
               <select
                 value={request.bodyType}
-                onChange={(e) => updateRequest(request.id, { bodyType: e.target.value as any })}
+                onChange={(e) => updateRequest(request.id, { bodyType: e.target.value as RequestModel['bodyType'] })}
                 className="bg-[#11131c] border border-white/[0.06] text-gray-300 px-2.5 py-1 rounded outline-none text-[11px]"
               >
                 <option value="json">JSON</option>
@@ -339,7 +342,7 @@ export default function RequestEditor({ request }: RequestEditorProps) {
               <select
                 value={request.auth.type}
                 onChange={(e) => updateRequest(request.id, {
-                  auth: { ...request.auth, type: e.target.value as any }
+                  auth: { ...request.auth, type: e.target.value as RequestModel['auth']['type'] }
                 })}
                 className="bg-[#11131c] border border-white/[0.06] text-gray-300 px-2.5 py-1.5 rounded outline-none text-[11px] cursor-pointer"
               >

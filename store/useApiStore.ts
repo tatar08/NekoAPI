@@ -27,7 +27,7 @@ export interface RequestModel {
     status: number;
     statusText: string;
     headers: Record<string, string>;
-    data: any;
+    data: unknown;
     time: number;
     size: number;
   };
@@ -46,6 +46,8 @@ export interface Environment {
 }
 
 interface ApiStoreState {
+  user: { id: string; username: string; role: string } | null;
+  loading: boolean;
   collections: Collection[];
   environments: Environment[];
   activeEnvironmentId: string | null;
@@ -54,15 +56,19 @@ interface ApiStoreState {
   history: { requestId: string; timestamp: number }[];
   
   // Actions
-  addCollection: (name: string) => void;
-  deleteCollection: (id: string) => void;
-  updateCollection: (id: string, updates: Partial<Collection>) => void;
-  addRequestToCollection: (collectionId: string, request: Partial<RequestModel>) => void;
-  updateRequest: (requestId: string, updates: Partial<RequestModel>) => void;
-  deleteRequest: (collectionId: string, requestId: string) => void;
+  setUser: (user: { id: string; username: string; role: string } | null) => void;
+  fetchData: () => Promise<void>;
   
-  addEnvironment: (name: string) => void;
-  updateEnvironmentVariables: (id: string, variables: KeyValueItem[]) => void;
+  addCollection: (name: string) => Promise<void>;
+  deleteCollection: (id: string) => Promise<void>;
+  updateCollection: (id: string, updates: Partial<Collection>) => Promise<void>;
+  addRequestToCollection: (collectionId: string, request: Partial<RequestModel>) => Promise<void>;
+  updateRequest: (requestId: string, updates: Partial<RequestModel>) => Promise<void>;
+  deleteRequest: (collectionId: string, requestId: string) => Promise<void>;
+  
+  addEnvironment: (name: string) => Promise<void>;
+  updateEnvironmentVariables: (id: string, variables: KeyValueItem[]) => Promise<void>;
+  deleteEnvironment: (id: string) => Promise<void>;
   setActiveEnvironment: (id: string | null) => void;
   
   openTab: (requestId: string) => void;
@@ -73,6 +79,8 @@ interface ApiStoreState {
 export const useApiStore = create<ApiStoreState>()(
   persist(
     (set, get) => ({
+      user: null,
+      loading: false,
       collections: [],
       environments: [],
       activeEnvironmentId: null,
@@ -80,21 +88,82 @@ export const useApiStore = create<ApiStoreState>()(
       activeTabId: null,
       history: [],
 
-      addCollection: (name) => set((state) => ({
-        collections: [...state.collections, { id: crypto.randomUUID(), name, requests: [] }]
-      })),
+      setUser: (user) => set({ user }),
 
-      deleteCollection: (id) => set((state) => ({
-        collections: state.collections.filter(c => c.id !== id)
-      })),
+      fetchData: async () => {
+        set({ loading: true });
+        try {
+          const [colRes, envRes] = await Promise.all([
+            fetch('/api/collections'),
+            fetch('/api/environments')
+          ]);
+          
+          if (colRes.ok && envRes.ok) {
+            const colData = await colRes.json();
+            const envData = await envRes.json();
+            set({
+              collections: colData.collections || [],
+              environments: envData.environments || []
+            });
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          set({ loading: false });
+        }
+      },
 
-      updateCollection: (id, updates) => set((state) => ({
-        collections: state.collections.map(c => c.id === id ? { ...c, ...updates } : c)
-      })),
+      addCollection: async (name) => {
+        const tempId = crypto.randomUUID();
+        set((state) => ({
+          collections: [...state.collections, { id: tempId, name, requests: [] }]
+        }));
 
-      addRequestToCollection: (collectionId, request) => set((state) => {
+        try {
+          const res = await fetch('/api/collections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name }),
+          });
+          const data = await res.json();
+          if (res.ok && data.collection) {
+            set((state) => ({
+              collections: state.collections.map((c) => c.id === tempId ? data.collection : c)
+            }));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+
+      deleteCollection: async (id) => {
+        set((state) => ({
+          collections: state.collections.filter(c => c.id !== id)
+        }));
+
+        await fetch(`/api/collections/${id}`, {
+          method: 'DELETE'
+        }).catch(console.error);
+      },
+
+      updateCollection: async (id, updates) => {
+        set((state) => ({
+          collections: state.collections.map(c => c.id === id ? { ...c, ...updates } : c)
+        }));
+
+        if (updates.name) {
+          await fetch(`/api/collections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: updates.name }),
+          }).catch(console.error);
+        }
+      },
+
+      addRequestToCollection: async (collectionId, request) => {
+        const tempId = crypto.randomUUID();
         const defaultReq: RequestModel = {
-          id: crypto.randomUUID(),
+          id: tempId,
           name: request.name || 'Untitled Request',
           method: request.method || 'GET',
           url: request.url || '',
@@ -106,52 +175,141 @@ export const useApiStore = create<ApiStoreState>()(
           ...request
         };
 
-        return {
+        set((state) => ({
           collections: state.collections.map((col) => {
             if (col.id === collectionId) {
               return { ...col, requests: [...col.requests, defaultReq] };
             }
             return col;
           })
-        };
-      }),
+        }));
 
-      updateRequest: (requestId, updates) => set((state) => ({
-        collections: state.collections.map((col) => ({
-          ...col,
-          requests: col.requests.map((req) => 
-            req.id === requestId ? { ...req, ...updates } : req
-          )
-        }))
-      })),
+        try {
+          const res = await fetch(`/api/collections/${collectionId}/requests`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(defaultReq),
+          });
+          const data = await res.json();
+          if (res.ok && data.request) {
+            set((state) => ({
+              collections: state.collections.map((col) => {
+                if (col.id === collectionId) {
+                  return {
+                    ...col,
+                    requests: col.requests.map((r) => r.id === tempId ? data.request : r)
+                  };
+                }
+                return col;
+              }),
+              tabs: state.tabs.map((t) => t === tempId ? data.request.id : t),
+              activeTabId: state.activeTabId === tempId ? data.request.id : state.activeTabId
+            }));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
 
-      deleteRequest: (collectionId, requestId) => set((state) => {
-        const nextTabs = state.tabs.filter(t => t !== requestId);
-        let nextActive = state.activeTabId;
-        if (state.activeTabId === requestId) {
+      updateRequest: async (requestId, updates) => {
+        let colId = '';
+        set((state) => {
+          state.collections.forEach(c => {
+            if (c.requests.some(r => r.id === requestId)) colId = c.id;
+          });
+          
+          return {
+            collections: state.collections.map((col) => ({
+              ...col,
+              requests: col.requests.map((req) => 
+                req.id === requestId ? { ...req, ...updates } : req
+              )
+            }))
+          };
+        });
+
+        if (colId) {
+          await fetch(`/api/collections/${colId}/requests/${requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+          }).catch(console.error);
+        }
+      },
+
+      deleteRequest: async (collectionId, requestId) => {
+        const nextTabs = get().tabs.filter(t => t !== requestId);
+        let nextActive = get().activeTabId;
+        if (get().activeTabId === requestId) {
           nextActive = nextTabs.length > 0 ? nextTabs[0] : null;
         }
-        return {
+
+        set({
           tabs: nextTabs,
           activeTabId: nextActive,
-          collections: state.collections.map((col) => {
+          collections: get().collections.map((col) => {
             if (col.id === collectionId) {
               return { ...col, requests: col.requests.filter(r => r.id !== requestId) };
             }
             return col;
           })
-        };
-      }),
+        });
 
-      addEnvironment: (name) => set((state) => ({
-        environments: [...state.environments, { id: crypto.randomUUID(), name, variables: [] }]
-      })),
+        await fetch(`/api/collections/${collectionId}/requests/${requestId}`, {
+          method: 'DELETE'
+        }).catch(console.error);
+      },
 
-      updateEnvironmentVariables: (id, variables) => set((state) => ({
-        environments: state.environments.map(env => 
-          env.id === id ? { ...env, variables } : env
-        )
-      })),
+      addEnvironment: async (name) => {
+        const tempId = crypto.randomUUID();
+        set((state) => ({
+          environments: [...state.environments, { id: tempId, name, variables: [] }]
+        }));
+
+        try {
+          const res = await fetch('/api/environments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name }),
+          });
+          const data = await res.json();
+          if (res.ok && data.environment) {
+            set((state) => ({
+              environments: state.environments.map(e => e.id === tempId ? data.environment : e)
+            }));
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      },
+
+      updateEnvironmentVariables: async (id, variables) => {
+        set((state) => ({
+          environments: state.environments.map(env => 
+            env.id === id ? { ...env, variables } : env
+          )
+        }));
+
+        await fetch(`/api/environments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variables }),
+        }).catch(console.error);
+      },
+
+      deleteEnvironment: async (id) => {
+        set((state) => {
+          const nextActive = state.activeEnvironmentId === id ? null : state.activeEnvironmentId;
+          return {
+            activeEnvironmentId: nextActive,
+            environments: state.environments.filter(env => env.id !== id)
+          };
+        });
+
+        await fetch(`/api/environments/${id}`, {
+          method: 'DELETE'
+        }).catch(console.error);
+      },
 
       setActiveEnvironment: (id) => set({ activeEnvironmentId: id }),
 
@@ -179,11 +337,11 @@ export const useApiStore = create<ApiStoreState>()(
       setActiveTab: (requestId) => set({ activeTabId: requestId })
     }),
     {
-      name: 'api-client-storage', // saves setup into LocalStorage
+      name: 'api-client-storage', // saves tabs and environment selections locally
       partialize: (state) => ({
-        collections: state.collections,
-        environments: state.environments,
-        activeEnvironmentId: state.activeEnvironmentId
+        activeEnvironmentId: state.activeEnvironmentId,
+        tabs: state.tabs,
+        activeTabId: state.activeTabId
       })
     }
   )

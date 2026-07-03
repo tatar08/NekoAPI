@@ -20,7 +20,7 @@ export default function RunnerEngine() {
   const [delay, setDelay] = useState<number>(0);
   const [parallel, setParallel] = useState<boolean>(false);
   
-  const [csvData, setCsvData] = useState<any[]>([]);
+  const [csvData, setCsvData] = useState<Record<string, unknown>[]>([]);
   const [executing, setExecuting] = useState<boolean>(false);
   const [results, setResults] = useState<ExecutionResult[]>([]);
   const [dragActive, setDragActive] = useState<boolean>(false);
@@ -48,7 +48,7 @@ export default function RunnerEngine() {
         });
         setCsvData(data);
       }
-    } catch (err) {
+    } catch {
       alert('Could not parse imported data file. Ensure it is correct JSON or CSV.');
     }
   };
@@ -99,7 +99,7 @@ export default function RunnerEngine() {
     }
   };
 
-  const runRequest = async (index: number, templateReq: RequestModel, contextVars: any): Promise<ExecutionResult> => {
+  const runRequest = async (index: number, templateReq: RequestModel, contextVars: Record<string, unknown>): Promise<ExecutionResult> => {
     const combinedVariables = [
       ...(activeEnv ? activeEnv.variables : []),
       ...Object.entries(contextVars).map(([key, value]) => ({
@@ -114,12 +114,30 @@ export default function RunnerEngine() {
     const resolvedUrl = resolveVariables(rawUrl, combinedVariables);
     
     try {
+      // Extract and append Enabled Query Params
+      const urlObj = new URL(resolvedUrl.startsWith('http') ? resolvedUrl : `http://${resolvedUrl}`);
+      templateReq.params.forEach(p => {
+        if (p.enabled && p.key) {
+          urlObj.searchParams.append(p.key, resolveVariables(p.value, combinedVariables));
+        }
+      });
+
       const headerMap: Record<string, string> = {};
       templateReq.headers.forEach(h => {
-        if (h.enabled) {
+        if (h.enabled && h.key) {
           headerMap[h.key] = resolveVariables(h.value, combinedVariables);
         }
       });
+
+      // Apply Auth configurations
+      if (templateReq.auth.type === 'bearer' && templateReq.auth.bearerToken) {
+        headerMap['Authorization'] = `Bearer ${resolveVariables(templateReq.auth.bearerToken, combinedVariables)}`;
+      } else if (templateReq.auth.type === 'basic' && templateReq.auth.basicUsername) {
+        const username = resolveVariables(templateReq.auth.basicUsername, combinedVariables);
+        const password = templateReq.auth.basicPassword ? resolveVariables(templateReq.auth.basicPassword, combinedVariables) : '';
+        const credentials = btoa(unescape(encodeURIComponent(`${username}:${password}`)));
+        headerMap['Authorization'] = `Basic ${credentials}`;
+      }
 
       const bodyRaw = templateReq.bodyType !== 'none' 
         ? resolveVariables(templateReq.body, combinedVariables) 
@@ -129,7 +147,7 @@ export default function RunnerEngine() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url: resolvedUrl,
+          url: urlObj.toString(),
           method: templateReq.method,
           headers: headerMap,
           body: bodyRaw
@@ -143,13 +161,14 @@ export default function RunnerEngine() {
         time: parsed.time || 0,
         success: parsed.status >= 200 && parsed.status < 300
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       return {
         index,
         status: 0,
         time: 0,
         success: false,
-        error: err.message || 'Transmission failed'
+        error: errMsg
       };
     }
   };

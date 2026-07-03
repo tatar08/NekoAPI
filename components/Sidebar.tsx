@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApiStore, KeyValueItem, RequestModel } from '@/store/useApiStore';
+import { useApiStore, KeyValueItem } from '@/store/useApiStore';
 
-export default function Sidebar() {
+interface SidebarProps {
+  activeView: 'workspace' | 'runner' | 'admin' | 'dashboard';
+  setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard') => void;
+}
+
+export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
   const {
     collections,
     environments,
@@ -18,7 +23,9 @@ export default function Sidebar() {
     addEnvironment,
     updateEnvironmentVariables,
     setActiveEnvironment,
-    openTab
+    openTab,
+    user,
+    setUser
   } = useApiStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,6 +162,50 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col h-full text-xs text-gray-300 select-none">
+      
+      {/* User Profile Card Header */}
+      {user && (
+        <div className="p-4 border-b border-white/[0.04] bg-[#0c0d14] flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center font-bold text-xs text-violet-300">
+                {user.username.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-200 truncate max-w-[120px]">{user.username}</span>
+                <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider leading-none mt-0.5">{user.role}</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={async () => {
+                if (confirm('Logout of NekoAPI?')) {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  setUser(null);
+                  window.location.reload();
+                }
+              }}
+              className="text-[10px] text-rose-400 hover:text-rose-300 transition hover:underline font-semibold"
+            >
+              Logout
+            </button>
+          </div>
+
+          {/* Admin Navigation Button */}
+          {user.role === 'admin' && (
+            <button
+              onClick={() => setActiveView(activeView === 'admin' ? 'workspace' : 'admin')}
+              className={`w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 border transition ${
+                activeView === 'admin'
+                  ? 'bg-violet-950/20 border-violet-500/40 text-violet-300'
+                  : 'bg-white/[0.01] border-white/[0.06] hover:border-white/15 text-gray-300'
+              }`}
+            >
+              🛡️ {activeView === 'admin' ? 'Back to Workspace' : 'Open Admin Panel'}
+            </button>
+          )}
+        </div>
+      )}
       
       {/* Environment Selector Glass Section */}
       <div className="p-4 border-b border-white/[0.04] bg-white/[0.01] flex flex-col gap-3">
@@ -424,7 +475,7 @@ export default function Sidebar() {
                   <div className="flex gap-1.5">
                     <select
                       value={newReqMethod}
-                      onChange={(e: any) => setNewReqMethod(e.target.value)}
+                      onChange={(e) => setNewReqMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')}
                       className="bg-[#090a0f] border border-white/[0.06] px-1 py-1.5 rounded text-white outline-none"
                     >
                       <option value="GET">GET</option>

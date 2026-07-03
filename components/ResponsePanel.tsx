@@ -36,7 +36,6 @@ export default function ResponsePanel({ request }: ResponsePanelProps) {
 
   const isSuccess = response.status >= 200 && response.status < 300;
   const isRedirect = response.status >= 300 && response.status < 400;
-  const isError = response.status >= 400 || response.status === 0;
 
   const getStatusClass = () => {
     if (isSuccess) return 'status-success animate-pulse-glow';
@@ -179,7 +178,7 @@ export default function ResponsePanel({ request }: ResponsePanelProps) {
    ═══════════════════════════════════════════════════════ */
 
 interface JSONNodeProps {
-  value: any;
+  value: unknown;
   label?: string;
   isLast: boolean;
   depth?: number;
@@ -218,7 +217,7 @@ function JSONNode({ value, label, isLast, depth = 0 }: JSONNodeProps) {
       <div className="font-mono text-[11px] leading-normal py-0.5" style={getIndent()}>
         {label && (
           <>
-            <span className="json-key">"{label}"</span>
+            <span className="json-key">&quot;{label}&quot;</span>
             <span className="text-gray-500 mr-1.5">:</span>
           </>
         )}
@@ -230,7 +229,7 @@ function JSONNode({ value, label, isLast, depth = 0 }: JSONNodeProps) {
 
   // Value is an Object or Array
   const isArray = Array.isArray(value);
-  const keys = Object.keys(value);
+  const keys = Object.keys(value as Record<string, unknown>);
   const totalItems = keys.length;
 
   const openingBracket = isArray ? '[' : '{';
@@ -241,7 +240,7 @@ function JSONNode({ value, label, isLast, depth = 0 }: JSONNodeProps) {
       <div className="font-mono text-[11px] py-0.5" style={getIndent()}>
         {label && (
           <>
-            <span className="json-key">"{label}"</span>
+            <span className="json-key">&quot;{label}&quot;</span>
             <span className="text-gray-500 mr-1.5">:</span>
           </>
         )}
@@ -265,7 +264,7 @@ function JSONNode({ value, label, isLast, depth = 0 }: JSONNodeProps) {
 
         {label && (
           <>
-            <span className="json-key">"{label}"</span>
+            <span className="json-key">&quot;{label}&quot;</span>
             <span className="text-gray-500 mr-1.5">:</span>
           </>
         )}
@@ -290,7 +289,7 @@ function JSONNode({ value, label, isLast, depth = 0 }: JSONNodeProps) {
               <JSONNode 
                 key={key} 
                 label={isArray ? undefined : key} 
-                value={value[key]} 
+                value={(value as Record<string, unknown>)[key]} 
                 isLast={idx === totalItems - 1} 
                 depth={depth + 1}
               />
