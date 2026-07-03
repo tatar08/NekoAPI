@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { useApiStore, KeyValueItem } from '@/store/useApiStore';
+import { useApiStore, KeyValueItem, RequestModel } from '@/store/useApiStore';
 import { nekoConfirm, nekoAlert } from '@/lib/alert';
 import Swal from 'sweetalert2';
 
@@ -291,7 +291,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                   if (e.key === 'Enter') handleRenameCollection(col.id);
                   if (e.key === 'Escape') setEditingColId(null);
                 }}
-                className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-28"
+                className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-full min-w-0"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
@@ -458,7 +458,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                 No requests inside this collection.
               </div>
             )}
-            {col.requests.map(req => {
+            {col.requests.map((req: RequestModel) => {
               const isTabActive = activeTabId === req.id;
               return (
                 <div
@@ -483,7 +483,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                           if (e.key === 'Enter') handleRenameRequest(req.id);
                           if (e.key === 'Escape') setEditingReqId(null);
                         }}
-                        className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-28 font-mono"
+                        className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-full min-w-0 font-mono"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
