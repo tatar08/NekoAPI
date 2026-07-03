@@ -220,22 +220,24 @@ export default function DashboardPage() {
       {/* Sidebar Panel Section */}
       <aside className="w-80 border-r border-white/[0.04] flex flex-col bg-[#0e1017] z-10">
         {/* Sidebar Brand Header */}
-        <div className="p-4 border-b border-white/[0.04] flex items-center justify-between bg-white/[0.005]">
-          <div className="flex items-center gap-2">
-            {/* Custom glowing gradient logo */}
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-600 to-blue-500 flex items-center justify-center font-bold text-sm text-white shadow-[0_0_12px_rgba(99,102,241,0.4)] animate-pulse-glow">
-              N
+        <div className="p-4 border-b border-white/[0.04] flex flex-col gap-3 bg-white/[0.005]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {/* Custom glowing gradient logo */}
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-600 to-blue-500 flex items-center justify-center font-bold text-sm text-white shadow-[0_0_12px_rgba(99,102,241,0.4)] animate-pulse-glow">
+                N
+              </div>
+              <span className="font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-200 to-blue-400 text-sm">
+                NEKOAPI
+              </span>
             </div>
-            <span className="font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-200 to-blue-400 text-sm">
-              NEKOAPI
-            </span>
           </div>
 
           {/* Toggle pill buttons */}
-          <div className="flex bg-[#161822] p-0.5 rounded-lg border border-white/[0.06] shadow-inner">
+          <div className="flex bg-[#161822] p-0.5 rounded-lg border border-white/[0.06] shadow-inner w-full">
             <button
               onClick={() => setActiveView('dashboard')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+              className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 text-center ${
                 activeView === 'dashboard'
                   ? 'bg-violet-600/90 text-white shadow-md'
                   : 'text-gray-400 hover:text-gray-200'
@@ -245,7 +247,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveView('workspace')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+              className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 text-center ${
                 activeView === 'workspace'
                   ? 'bg-violet-600/90 text-white shadow-md'
                   : 'text-gray-400 hover:text-gray-200'
@@ -255,7 +257,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setActiveView('runner')}
-              className={`px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 ${
+              className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold tracking-wide uppercase transition duration-200 text-center ${
                 activeView === 'runner'
                   ? 'bg-violet-600/90 text-white shadow-md'
                   : 'text-gray-400 hover:text-gray-200'
