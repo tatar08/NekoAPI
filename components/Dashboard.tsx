@@ -305,7 +305,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-gray-400">Storage</span>
-                  <span className="text-gray-300 font-mono text-[10px]">SQLite</span>
+                  <span className="text-gray-300 font-mono text-[10px]">PostgreSQL</span>
                 </div>
               </div>
             </div>
