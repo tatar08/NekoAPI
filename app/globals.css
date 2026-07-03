@@ -547,6 +547,13 @@ html.light {
 
   --scrollbar-thumb: rgba(139, 92, 246, 0.35);
   --scrollbar-thumb-hover: rgba(139, 92, 246, 0.6);
+
+  /* Deep theme-specific method text colors for high readability on light backgrounds */
+  --method-get: #15803d;
+  --method-post: #1d4ed8;
+  --method-put: #b45309;
+  --method-delete: #b91c1c;
+  --method-patch: #6d28d9;
 }
 
 /* Base scrollbar light overrides */
@@ -564,7 +571,7 @@ html.light .bg-\[\#0c0d14\]\/50 { background-color: rgba(241, 245, 249, 0.5) !im
 html.light .bg-\[\#11131c\] { background-color: var(--bg-base) !important; }
 html.light .bg-\[\#0c0e15\] { background-color: var(--bg-base) !important; }
 html.light .bg-\[\#0c0e15\]\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
-html.light .bg-\[\#161822\] { background-color: var(--bg-surface) !important; }
+html.light .bg-\[\#161822\] { background-color: var(--bg-base) !important; border-color: var(--border-subtle) !important; }
 html.light .bg-\[\#10121a\] { background-color: var(--bg-elevated) !important; }
 html.light .bg-\[\#090a0f\] { background-color: var(--bg-deep) !important; }
 html.light .bg-\[\#1c1f2e\] { background-color: var(--bg-elevated) !important; }
@@ -574,6 +581,7 @@ html.light .bg-white\/\[0\.002\] { background-color: var(--bg-base) !important; 
 html.light .bg-white\/\[0\.005\] { background-color: var(--bg-base) !important; }
 html.light .bg-white\/\[0\.01\] { background-color: var(--bg-elevated) !important; }
 html.light .bg-white\/\[0\.02\] { background-color: var(--bg-hover) !important; }
+html.light .bg-violet-950\/20 { background-color: rgba(139, 92, 246, 0.08) !important; }
 
 /* Hardcoded Border overrides for Light Mode */
 html.light .border-white\/\[0\.04\] { border-color: var(--border-subtle) !important; }
@@ -581,12 +589,51 @@ html.light .border-white\/\[0\.06\] { border-color: var(--border-default) !impor
 html.light .border-white\/\[0\.03\] { border-color: var(--border-subtle) !important; }
 html.light .border-white\/\[0\.02\] { border-color: var(--border-subtle) !important; }
 
-/* Hardcoded Text overrides for Light Mode */
+/* Hardcoded Text & Contrast overrides for Light Mode */
 html.light .text-gray-200 { color: var(--text-primary) !important; }
 html.light .text-gray-300 { color: var(--text-secondary) !important; }
 html.light .text-gray-400 { color: var(--text-muted) !important; }
 html.light .text-gray-500 { color: var(--text-disabled) !important; }
 html.light .text-white { color: var(--text-primary) !important; }
+
+html.light .text-violet-300 { color: #6d28d9 !important; }
+html.light .text-violet-400 { color: #7c3aed !important; }
+html.light .text-blue-400 { color: #2563eb !important; }
+html.light .text-emerald-400 { color: #059669 !important; }
+html.light .text-amber-400 { color: #d97706 !important; }
+html.light .text-rose-400 { color: #dc2626 !important; }
+html.light .text-purple-400 { color: #9333ea !important; }
+
+/* Sidebar brand logo text gradient override for Light Mode */
+html.light .bg-gradient-to-r.from-violet-400 {
+  background: linear-gradient(to right, #6d28d9, #4f46e5, #2563eb) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Dashboard gradient elements override for Light Mode */
+html.light .bg-gradient-to-br.from-violet-950\/30 {
+  background: linear-gradient(135deg, rgba(237, 233, 254, 0.4), var(--bg-surface), rgba(224, 231, 255, 0.3)) !important;
+}
+html.light .text-transparent.bg-gradient-to-r.from-white {
+  background: linear-gradient(to right, var(--text-primary), var(--text-secondary)) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+}
+html.light .bg-gradient-to-r.from-violet-950\/20 {
+  background: linear-gradient(to right, rgba(139, 92, 246, 0.08), rgba(99, 102, 241, 0.05)) !important;
+  border-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+/* JSON syntax coloring overrides for Light Mode pre tag */
+html.light .json-key { color: #0284c7 !important; }
+html.light .json-string { color: #16a34a !important; }
+html.light .json-number { color: #ea580c !important; }
+html.light .json-boolean { color: #7c3aed !important; }
+html.light .json-null { color: #64748b !important; }
+html.light .json-bracket { color: #475569 !important; }
 
 /* Dynamic SweetAlert2 Light Mode styling */
 html.light .swal2-popup {
