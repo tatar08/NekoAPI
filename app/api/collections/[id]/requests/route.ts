@@ -11,9 +11,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id: collectionId } = await params;
 
   try {
-    // Verify collection ownership
+    // Verify collection ownership or shared status
     const collection = await prisma.collection.findFirst({
-      where: { id: collectionId, userId: user.id },
+      where: {
+        id: collectionId,
+        OR: [
+          { userId: user.id },
+          { isShared: true },
+        ],
+      },
     });
 
     if (!collection) {

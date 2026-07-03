@@ -14,9 +14,15 @@ export async function PUT(
   const { id: collectionId, reqId } = await params;
 
   try {
-    // Verify collection ownership
+    // Verify collection ownership or shared status
     const collection = await prisma.collection.findFirst({
-      where: { id: collectionId, userId: user.id },
+      where: {
+        id: collectionId,
+        OR: [
+          { userId: user.id },
+          { isShared: true },
+        ],
+      },
     });
 
     if (!collection) {
@@ -74,9 +80,15 @@ export async function DELETE(
   const { id: collectionId, reqId } = await params;
 
   try {
-    // Verify collection ownership
+    // Verify collection ownership or shared status
     const collection = await prisma.collection.findFirst({
-      where: { id: collectionId, userId: user.id },
+      where: {
+        id: collectionId,
+        OR: [
+          { userId: user.id },
+          { isShared: true },
+        ],
+      },
     });
 
     if (!collection) {

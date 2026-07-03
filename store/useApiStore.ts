@@ -36,6 +36,8 @@ export interface RequestModel {
 export interface Collection {
   id: string;
   name: string;
+  isShared?: boolean;
+  userId?: string;
   requests: RequestModel[];
 }
 
@@ -151,11 +153,15 @@ export const useApiStore = create<ApiStoreState>()(
           collections: state.collections.map(c => c.id === id ? { ...c, ...updates } : c)
         }));
 
-        if (updates.name) {
+        const body: Record<string, any> = {};
+        if ('name' in updates) body.name = updates.name;
+        if ('isShared' in updates) body.isShared = updates.isShared;
+
+        if (Object.keys(body).length > 0) {
           await fetch(`/api/collections/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: updates.name }),
+            body: JSON.stringify(body),
           }).catch(console.error);
         }
       },

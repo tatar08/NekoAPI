@@ -11,23 +11,35 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
 
   try {
-    const { name } = await req.json();
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: 'Collection name is required' }, { status: 400 });
-    }
-
-    // Verify ownership
+    const updates = await req.json();
+    
+    // Verify ownership or Admin role
     const collection = await prisma.collection.findFirst({
-      where: { id, userId: user.id },
+      where: { id },
     });
 
     if (!collection) {
       return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
     }
 
+    if (collection.userId !== user.id && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized. Only the owner or an admin can modify this collection.' }, { status: 403 });
+    }
+
+    const data: Record<string, any> = {};
+    if ('name' in updates) {
+      if (!updates.name || !updates.name.trim()) {
+        return NextResponse.json({ error: 'Collection name is required' }, { status: 400 });
+      }
+      data.name = updates.name.trim();
+    }
+    if ('isShared' in updates) {
+      data.isShared = Boolean(updates.isShared);
+    }
+
     const updated = await prisma.collection.update({
       where: { id },
-      data: { name: name.trim() },
+      data,
     });
 
     return NextResponse.json({ collection: updated });
@@ -46,13 +58,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params;
 
   try {
-    // Verify ownership
+    // Verify ownership or Admin role
     const collection = await prisma.collection.findFirst({
-      where: { id, userId: user.id },
+      where: { id },
     });
 
     if (!collection) {
       return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+    }
+
+    if (collection.userId !== user.id && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized. Only the owner or an admin can delete this collection.' }, { status: 403 });
     }
 
     await prisma.collection.delete({

@@ -10,12 +10,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const dbCollections = await prisma.collection.findMany({
-      where: { userId: user.id },
+      where: {
+        OR: [
+          { userId: user.id },
+          { isShared: true },
+        ],
+      },
       include: { requests: true },
     });
 
     // Parse JSON string fields back to objects
-    const collections = dbCollections.map((col: { id: string; name: string; userId: string; requests: { id: string; name: string; method: string; url: string; headers: string; params: string; bodyType: string; body: string; auth: string }[] }) => ({
+    const collections = dbCollections.map((col: { id: string; name: string; isShared: boolean; userId: string; requests: { id: string; name: string; method: string; url: string; headers: string; params: string; bodyType: string; body: string; auth: string }[] }) => ({
       ...col,
       requests: col.requests.map((r: { id: string; name: string; method: string; url: string; headers: string; params: string; bodyType: string; body: string; auth: string }) => ({
         ...r,
