@@ -291,7 +291,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                   if (e.key === 'Enter') handleRenameCollection(col.id);
                   if (e.key === 'Escape') setEditingColId(null);
                 }}
-                className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-full min-w-0"
+                className="flex-1 min-w-0 bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
@@ -410,14 +410,14 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
               placeholder="Request name..."
               value={newReqName}
               onChange={(e) => setNewReqName(e.target.value)}
-              className="bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 px-2 py-1.5 rounded text-white outline-none"
+              className="w-full bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 px-2.5 py-1.5 rounded text-white outline-none text-xs"
               autoFocus
             />
             <div className="flex gap-1.5">
               <select
                 value={newReqMethod}
                 onChange={(e) => setNewReqMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')}
-                className="bg-[#090a0f] border border-white/[0.06] px-1 py-1.5 rounded text-white outline-none"
+                className="w-20 bg-[#090a0f] border border-white/[0.06] px-1.5 py-1.5 rounded text-white outline-none text-xs"
               >
                 <option value="GET">GET</option>
                 <option value="POST">POST</option>
@@ -430,7 +430,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                 placeholder="https://api.com/path or {{baseUrl}}/path"
                 value={newReqUrl}
                 onChange={(e) => setNewReqUrl(e.target.value)}
-                className="flex-1 bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 px-2.5 py-1.5 rounded text-white outline-none"
+                className="flex-1 min-w-0 bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 px-2.5 py-1.5 rounded text-white outline-none text-xs"
               />
             </div>
             <div className="flex justify-end gap-1.5 mt-1">
@@ -483,7 +483,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                           if (e.key === 'Enter') handleRenameRequest(req.id);
                           if (e.key === 'Escape') setEditingReqId(null);
                         }}
-                        className="bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs w-full min-w-0 font-mono"
+                        className="flex-1 min-w-0 bg-[#090a0f] border border-violet-500/50 px-1.5 py-0.5 rounded text-white outline-none text-xs font-mono"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
