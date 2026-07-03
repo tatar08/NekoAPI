@@ -10,6 +10,14 @@ interface SidebarProps {
   setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard') => void;
 }
 
+const NEW_REQ_METHOD_COLORS: Record<string, string> = {
+  GET: 'text-emerald-400',
+  POST: 'text-blue-400',
+  PUT: 'text-amber-400',
+  DELETE: 'text-rose-400',
+  PATCH: 'text-purple-400',
+};
+
 export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
   const {
     collections,
@@ -417,20 +425,20 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
               <select
                 value={newReqMethod}
                 onChange={(e) => setNewReqMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH')}
-                className="w-20 bg-[#090a0f] border border-white/[0.06] px-1.5 py-1.5 rounded text-white outline-none text-xs"
+                className={`w-20 bg-[#11131c] border border-white/[0.06] px-2 py-1.5 rounded-lg outline-none text-xs font-bold transition cursor-pointer ${NEW_REQ_METHOD_COLORS[newReqMethod] || 'text-white'}`}
               >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-                <option value="PATCH">PATCH</option>
+                <option value="GET" className="text-emerald-400">GET</option>
+                <option value="POST" className="text-blue-400">POST</option>
+                <option value="PUT" className="text-amber-400">PUT</option>
+                <option value="DELETE" className="text-rose-400">DELETE</option>
+                <option value="PATCH" className="text-purple-400">PATCH</option>
               </select>
               <input
                 type="text"
                 placeholder="https://api.com/path or {{baseUrl}}/path"
                 value={newReqUrl}
                 onChange={(e) => setNewReqUrl(e.target.value)}
-                className="flex-1 min-w-0 bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 px-2.5 py-1.5 rounded text-white outline-none text-xs"
+                className="flex-1 min-w-0 bg-[#11131c] border border-white/[0.06] focus:border-violet-500/50 px-2.5 py-1.5 rounded-lg text-white outline-none text-xs font-mono transition placeholder-gray-600"
               />
             </div>
             <div className="flex justify-end gap-1.5 mt-1">
