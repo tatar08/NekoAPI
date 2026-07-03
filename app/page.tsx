@@ -273,34 +273,35 @@ export default function DashboardPage() {
 
         {/* User Profile & Logout Panel */}
         {user && (
-          <div className="p-4 border-t border-white/[0.04] bg-white/[0.002] flex items-center justify-between gap-3 animate-fade-in">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white uppercase shadow-[0_0_8px_rgba(99,102,241,0.2)]">
-                {user.username.slice(0, 2)}
-              </div>
-              <div className="flex flex-col overflow-hidden text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-gray-200 truncate">{user.username}</span>
-                  {user.role === 'admin' && (
-                    <button 
-                      onClick={() => setActiveView('admin')}
-                      title="Open Admin Panel"
-                      className="text-amber-400 hover:text-amber-300 transition text-[10px] cursor-pointer"
-                    >
-                      🛡️
-                    </button>
-                  )}
+          <div className="p-4 border-t border-white/[0.04] bg-white/[0.002] flex flex-col gap-2.5 animate-fade-in">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 overflow-hidden">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white uppercase shadow-[0_0_8px_rgba(99,102,241,0.2)]">
+                  {user.username.slice(0, 2)}
                 </div>
-                <span className="text-[9px] text-gray-500 uppercase font-semibold tracking-wider">{user.role}</span>
+                <div className="flex flex-col overflow-hidden text-xs">
+                  <span className="font-bold text-gray-200 truncate">{user.username}</span>
+                  <span className="text-[9px] text-gray-500 uppercase font-semibold tracking-wider">{user.role}</span>
+                </div>
               </div>
+              
+              <button
+                onClick={handleLogout}
+                className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+              >
+                Logout
+              </button>
             </div>
-            
-            <button
-              onClick={handleLogout}
-              className="text-[10px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider bg-rose-500/10 border border-rose-500/20 hover:border-rose-500/40 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
-            >
-              Logout
-            </button>
+
+            {user.role === 'admin' && (
+              <button
+                onClick={() => setActiveView('admin')}
+                className="w-full px-3 py-2 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/10 hover:border-amber-500/30 text-amber-400 hover:text-amber-300 rounded-lg text-[9px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
+              >
+                <span>🛡️</span>
+                <span>Open Admin Panel</span>
+              </button>
+            )}
           </div>
         )}
       </aside>
