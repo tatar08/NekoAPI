@@ -61,6 +61,9 @@
   --transition-default: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --scrollbar-thumb: rgba(139, 92, 246, 0.25);
+  --scrollbar-thumb-hover: rgba(139, 92, 246, 0.45);
 }
 
 @theme inline {
@@ -73,7 +76,7 @@
 /* ---------- Base Resets ---------- */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -86,12 +89,12 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.45);
+  background: var(--scrollbar-thumb-hover);
 }
 
 body {
@@ -517,4 +520,93 @@ textarea:focus-visible {
   background: var(--accent-gradient);
   border-radius: var(--radius-full);
   transition: width var(--transition-default);
+}
+
+/* =======================================================
+   LIGHT MODE STYLING & VARIABLE OVERRIDES
+   ======================================================= */
+html.light {
+  --bg-deep: #f8fafc;
+  --bg-base: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-elevated: #e2e8f0;
+  --bg-hover: #cbd5e1;
+  --bg-active: #94a3b8;
+
+  --border-subtle: rgba(15, 23, 42, 0.05);
+  --border-default: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.15);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-disabled: #94a3b8;
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(15, 23, 42, 0.06);
+
+  --scrollbar-thumb: rgba(139, 92, 246, 0.35);
+  --scrollbar-thumb-hover: rgba(139, 92, 246, 0.6);
+}
+
+/* Base scrollbar light overrides */
+html.light * {
+  scrollbar-color: var(--scrollbar-thumb) transparent !important;
+}
+
+/* Hardcoded Background color overrides for Light Mode */
+html.light .bg-\[\#07080c\] { background-color: var(--bg-deep) !important; }
+html.light .bg-\[\#0e1017\] { background-color: var(--bg-surface) !important; }
+html.light .bg-\[\#0a0b10\] { background-color: var(--bg-deep) !important; }
+html.light .bg-\[\#0c0d14\] { background-color: var(--bg-base) !important; }
+html.light .bg-\[\#0c0d14\]\/30 { background-color: rgba(241, 245, 249, 0.3) !important; }
+html.light .bg-\[\#0c0d14\]\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+html.light .bg-\[\#11131c\] { background-color: var(--bg-base) !important; }
+html.light .bg-\[\#0c0e15\] { background-color: var(--bg-base) !important; }
+html.light .bg-\[\#0c0e15\]\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+html.light .bg-\[\#161822\] { background-color: var(--bg-surface) !important; }
+html.light .bg-\[\#10121a\] { background-color: var(--bg-elevated) !important; }
+html.light .bg-\[\#090a0f\] { background-color: var(--bg-deep) !important; }
+html.light .bg-\[\#1c1f2e\] { background-color: var(--bg-elevated) !important; }
+html.light .bg-\[\#0f1118\]\/40 { background-color: rgba(226, 232, 240, 0.4) !important; }
+html.light .bg-\[\#0f1118\]\/80 { background-color: rgba(226, 232, 240, 0.8) !important; }
+html.light .bg-white\/\[0\.002\] { background-color: var(--bg-base) !important; }
+html.light .bg-white\/\[0\.005\] { background-color: var(--bg-base) !important; }
+html.light .bg-white\/\[0\.01\] { background-color: var(--bg-elevated) !important; }
+html.light .bg-white\/\[0\.02\] { background-color: var(--bg-hover) !important; }
+
+/* Hardcoded Border overrides for Light Mode */
+html.light .border-white\/\[0\.04\] { border-color: var(--border-subtle) !important; }
+html.light .border-white\/\[0\.06\] { border-color: var(--border-default) !important; }
+html.light .border-white\/\[0\.03\] { border-color: var(--border-subtle) !important; }
+html.light .border-white\/\[0\.02\] { border-color: var(--border-subtle) !important; }
+
+/* Hardcoded Text overrides for Light Mode */
+html.light .text-gray-200 { color: var(--text-primary) !important; }
+html.light .text-gray-300 { color: var(--text-secondary) !important; }
+html.light .text-gray-400 { color: var(--text-muted) !important; }
+html.light .text-gray-500 { color: var(--text-disabled) !important; }
+html.light .text-white { color: var(--text-primary) !important; }
+
+/* Dynamic SweetAlert2 Light Mode styling */
+html.light .swal2-popup {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+}
+html.light .swal2-title {
+  color: var(--text-primary) !important;
+}
+html.light .swal2-html-container {
+  color: var(--text-secondary) !important;
+}
+html.light .swal2-input {
+  background-color: var(--bg-deep) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+}
+html.light .swal2-cancel {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-default) !important;
 }

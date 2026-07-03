@@ -18,6 +18,35 @@ export default function DashboardPage() {
   const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard'>('dashboard');
   const router = useRouter();
 
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // Initialize theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('neko_theme') as 'dark' | 'light';
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
+    } else {
+      // Default to dark mode
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('neko_theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
+
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => {
@@ -231,6 +260,23 @@ export default function DashboardPage() {
                 NEKOAPI
               </span>
             </div>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg border border-white/[0.06] bg-[#161822] hover:bg-[#232740] text-gray-400 hover:text-white transition duration-200 cursor-pointer flex items-center justify-center shadow-inner"
+              title="Toggle Dark/Light Mode"
+            >
+              {theme === 'dark' ? (
+                <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464-4.95a1 1 0 111.414 1.414L14.12 7.293a1 1 0 01-1.414-1.414l.828-.828zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-2.293 4.293a1 1 0 010 1.414L13.88 17.54a1 1 0 01-1.414-1.414l.828-.828a1 1 0 011.414 0zM11 17a1 1 0 11-2 0v-1a1 1 0 112 0v1zm-7.071-3.071a1 1 0 010-1.414l.828-.828a1 1 0 111.414 1.414l-.828.828a1 1 0 01-1.414 0zM4 10a1 1 0 100-2H3a1 1 0 000 2h1zm1.464-4.95a1 1 0 11-1.414-1.414l.828-.828a1 1 0 111.414 1.414l-.828.828z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              )}
+            </button>
           </div>
 
           {/* Toggle pill buttons */}
