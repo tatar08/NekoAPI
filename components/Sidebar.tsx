@@ -475,7 +475,10 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                     isTabActive ? 'bg-violet-950/20 text-violet-300 font-medium' : 'hover:bg-white/[0.02] text-gray-400'
                   }`}
                   style={{ borderLeft: isTabActive ? '2px solid var(--accent-primary)' : '2px solid transparent' }}
-                  onClick={() => openTab(req.id)}
+                  onClick={() => {
+                    openTab(req.id);
+                    setActiveView('workspace');
+                  }}
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden flex-1">
                     <span className={`method-badge ${getMethodBadgeClass(req.method)}`}>
