@@ -206,6 +206,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
     setAddingReqToColId(null);
     // Auto expand collection when request is added
     setCollapsedCols(prev => ({ ...prev, [colId]: false }));
+    setActiveView('workspace');
   };
 
   const handleCreateEnvironment = (e: React.FormEvent) => {
