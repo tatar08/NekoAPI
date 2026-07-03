@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApiStore, KeyValueItem } from '@/store/useApiStore';
-import { nekoConfirm } from '@/lib/alert';
+import { nekoConfirm, nekoAlert } from '@/lib/alert';
+import Swal from 'sweetalert2';
 
 interface SidebarProps {
   activeView: 'workspace' | 'runner' | 'admin' | 'dashboard';
@@ -32,6 +33,105 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [newColName, setNewColName] = useState('');
   const [showAddCol, setShowAddCol] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportCollection = (col: any) => {
+    try {
+      const exportData = {
+        name: col.name,
+        requests: col.requests.map((r: any) => ({
+          name: r.name,
+          method: r.method,
+          url: r.url,
+          headers: r.headers,
+          params: r.params,
+          bodyType: r.bodyType,
+          body: r.body,
+          auth: r.auth,
+        }))
+      };
+      
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `${col.name.replace(/\s+/g, '_')}_collection.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (!data.name) {
+          nekoAlert('Invalid File', 'This file is not a valid NekoAPI collection. Missing collection "name".', 'error');
+          return;
+        }
+
+        Swal.fire({
+          title: 'Importing...',
+          text: `Creating collection "${data.name}" and importing requests.`,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // 1. Create collection
+        const res = await fetch('/api/collections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: data.name }),
+        });
+        const resData = await res.json();
+        if (!res.ok || !resData.collection) {
+          throw new Error(resData.error || 'Failed to create collection');
+        }
+
+        const newCol = resData.collection;
+
+        // 2. Import requests
+        if (Array.isArray(data.requests)) {
+          for (const req of data.requests) {
+            const defaultReq = {
+              name: req.name || 'Untitled Request',
+              method: req.method || 'GET',
+              url: req.url || '',
+              headers: req.headers || [],
+              params: req.params || [],
+              bodyType: req.bodyType || 'none',
+              body: req.body || '',
+              auth: req.auth || { type: 'none' },
+            };
+            await fetch(`/api/collections/${newCol.id}/requests`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(defaultReq),
+            });
+          }
+        }
+
+        // 3. Reload store
+        await useApiStore.getState().fetchData();
+        
+        Swal.close();
+        nekoAlert('Import Success', `Collection "${data.name}" imported successfully with ${data.requests?.length || 0} requests!`, 'success');
+      } catch (err: any) {
+        Swal.close();
+        nekoAlert('Import Error', err.message || 'Could not parse collection file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   // Request creation state
   const [newReqName, setNewReqName] = useState('');
@@ -352,12 +452,28 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
       {/* Collections Panel Header */}
       <div className="px-4 py-3 flex items-center justify-between bg-white/[0.01]">
         <span className="font-semibold text-gray-400 uppercase tracking-widest text-[9px]">Collections</span>
-        <button
-          onClick={() => setShowAddCol(!showAddCol)}
-          className="text-violet-400 hover:text-violet-300 font-medium text-xs bg-violet-500/10 px-2.5 py-1 rounded-md border border-violet-500/20 hover:border-violet-500/40 transition duration-200"
-        >
-          + New
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="text-gray-400 hover:text-gray-200 font-medium text-[10px] bg-white/[0.02] hover:bg-white/[0.06] px-2 py-1 rounded-md border border-white/[0.06] hover:border-white/10 transition duration-200 cursor-pointer"
+            title="Import Collection"
+          >
+            Import
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImportFile}
+            accept=".json"
+            className="hidden"
+          />
+          <button
+            onClick={() => setShowAddCol(!showAddCol)}
+            className="text-violet-400 hover:text-violet-300 font-medium text-xs bg-violet-500/10 px-2.5 py-1 rounded-md border border-violet-500/20 hover:border-violet-500/40 transition duration-200"
+          >
+            + New
+          </button>
+        </div>
       </div>
 
       {/* Add Collection input */}
@@ -447,6 +563,16 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                     className="text-violet-400 hover:text-violet-300 font-semibold text-[10px] bg-violet-500/10 border border-violet-500/20 rounded px-1.5 py-0.5 transition"
                   >
                     + Add
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      exportCollection(col);
+                    }}
+                    title="Export Collection"
+                    className="text-gray-500 hover:text-emerald-400 transition"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                   </button>
                   <button
                     onClick={async (e) => {
