@@ -306,7 +306,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
               />
             ) : (
               <span 
-                className="font-semibold text-slate-800 dark:text-gray-200 truncate max-w-[130px]"
+                className="font-semibold text-gray-200 html-light-text-slate-800 truncate max-w-[130px]"
                 onDoubleClick={(e) => {
                   if (isSharedSection && !isOwnerOrAdmin) return;
                   e.stopPropagation();
@@ -502,7 +502,7 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
                     ) : (
                       <span 
                         className={`truncate max-w-[130px] text-xs transition-colors duration-150 ${
-                          isTabActive ? 'text-violet-700 dark:text-violet-300 font-semibold' : 'text-gray-700 dark:text-gray-400'
+                          isTabActive ? 'text-violet-300 html-light-text-violet-700 font-semibold' : 'text-gray-400 html-light-text-gray-700'
                         }`}
                         onDoubleClick={(e) => {
                           e.stopPropagation();

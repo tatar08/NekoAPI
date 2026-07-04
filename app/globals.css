@@ -671,3 +671,14 @@ html.light .border-emerald-500\/30 {
 html.light .bg-\[\#090a0f\]\/40 {
   background-color: rgba(241, 245, 249, 0.4) !important;
 }
+
+/* Sidebar Custom Light Text Contrast Helpers */
+html.light .html-light-text-slate-800 {
+  color: #1e293b !important; /* slate 800 */
+}
+html.light .html-light-text-violet-700 {
+  color: #6d28d9 !important; /* violet 700 */
+}
+html.light .html-light-text-gray-700 {
+  color: #334155 !important; /* gray 700 / slate 700 */
+}
