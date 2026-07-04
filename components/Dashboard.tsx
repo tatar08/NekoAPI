@@ -772,6 +772,48 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
               )}
             </div>
           </div>
+
+          {/* Runner Statistics */}
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">🏃 Bulk Runner History</span>
+              {(passedRunsCount > 0 || failedRunsCount > 0) && (
+                <button 
+                  onClick={() => resetRunStats()}
+                  className="text-[9px] text-gray-500 hover:text-rose-400 transition font-medium cursor-pointer"
+                >
+                  Reset stats
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-[#0e1017] rounded-xl border border-white/[0.04] p-5 shadow-md relative overflow-hidden group hover:border-emerald-500/20 transition-all duration-300">
+                <div className="absolute top-3 right-3 text-lg opacity-25 group-hover:opacity-40 transition-opacity duration-300">
+                  ✅
+                </div>
+                <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider block mb-1">Passed Runs</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl font-black font-mono text-emerald-400 tabular-nums">
+                    {passedRunsCount}
+                  </span>
+                  <span className="text-[10px] text-gray-500">runs</span>
+                </div>
+              </div>
+
+              <div className="bg-[#0e1017] rounded-xl border border-white/[0.04] p-5 shadow-md relative overflow-hidden group hover:border-rose-500/20 transition-all duration-300">
+                <div className="absolute top-3 right-3 text-lg opacity-25 group-hover:opacity-40 transition-opacity duration-300">
+                  ❌
+                </div>
+                <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider block mb-1">Failed Runs</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl font-black font-mono text-rose-400 tabular-nums">
+                    {failedRunsCount}
+                  </span>
+                  <span className="text-[10px] text-gray-500">runs</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Recent Collections + System Info */}
@@ -877,47 +919,6 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
             </div>
           </div>
 
-          {/* Runner Statistics */}
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center px-1">
-              <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider">🏃 Bulk Runner History</span>
-              {(passedRunsCount > 0 || failedRunsCount > 0) && (
-                <button 
-                  onClick={() => resetRunStats()}
-                  className="text-[9px] text-gray-500 hover:text-rose-400 transition font-medium cursor-pointer"
-                >
-                  Reset stats
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#0e1017] rounded-xl border border-white/[0.04] p-5 shadow-md relative overflow-hidden group hover:border-emerald-500/20 transition-all duration-300">
-                <div className="absolute top-3 right-3 text-lg opacity-25 group-hover:opacity-40 transition-opacity duration-300">
-                  ✅
-                </div>
-                <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider block mb-1">Passed Runs</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-black font-mono text-emerald-400 tabular-nums">
-                    {passedRunsCount}
-                  </span>
-                  <span className="text-[10px] text-gray-500">runs</span>
-                </div>
-              </div>
-
-              <div className="bg-[#0e1017] rounded-xl border border-white/[0.04] p-5 shadow-md relative overflow-hidden group hover:border-rose-500/20 transition-all duration-300">
-                <div className="absolute top-3 right-3 text-lg opacity-25 group-hover:opacity-40 transition-opacity duration-300">
-                  ❌
-                </div>
-                <span className="text-[9px] uppercase font-bold text-gray-500 tracking-wider block mb-1">Failed Runs</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-black font-mono text-rose-400 tabular-nums">
-                    {failedRunsCount}
-                  </span>
-                  <span className="text-[10px] text-gray-500">runs</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
