@@ -255,52 +255,50 @@ export default function RequestEditor({ request }: RequestEditorProps) {
             'Send'
           )}
         </button>
-      </div>
-
-      {/* Editor Sections Navigation Tabs */}
-      <div className="flex justify-between items-center border-b border-white/[0.04]">
-        <div className="flex flex-1 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveTab('params')}
-            className={`tab-item ${activeTab === 'params' ? 'active' : ''}`}
-          >
-            Params
-            <span className="tab-count">{request.params.filter(p => p.enabled && p.key).length}</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('headers')}
-            className={`tab-item ${activeTab === 'headers' ? 'active' : ''}`}
-          >
-            Headers
-            <span className="tab-count">{request.headers.filter(h => h.enabled && h.key).length}</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('body')}
-            className={`tab-item ${activeTab === 'body' ? 'active' : ''}`}
-          >
-            Body
-          </button>
-          <button
-            onClick={() => setActiveTab('auth')}
-            className={`tab-item ${activeTab === 'auth' ? 'active' : ''}`}
-          >
-            Auth
-            {request.auth.type !== 'none' && (
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 inline-block ml-1" />
-            )}
-          </button>
-        </div>
 
         {request.id.startsWith('temp-') && (
           <button
             onClick={handleSaveTempRequest}
-            className="mb-1.5 px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-400 hover:text-amber-300 rounded-md text-[10px] font-bold uppercase tracking-wider transition duration-150 cursor-pointer shadow-sm active:scale-95 flex items-center gap-1 mr-1"
+            className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase rounded-lg cursor-pointer transition shadow-[0_0_12px_rgba(245,158,11,0.25)] active:scale-95 flex items-center gap-1.5"
             title="Save Request to Collection"
           >
             <span>💾</span>
             <span>Save</span>
           </button>
         )}
+      </div>
+
+      {/* Editor Sections Navigation Tabs */}
+      <div className="flex border-b border-white/[0.04]">
+        <button
+          onClick={() => setActiveTab('params')}
+          className={`tab-item ${activeTab === 'params' ? 'active' : ''}`}
+        >
+          Params
+          <span className="tab-count">{request.params.filter(p => p.enabled && p.key).length}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('headers')}
+          className={`tab-item ${activeTab === 'headers' ? 'active' : ''}`}
+        >
+          Headers
+          <span className="tab-count">{request.headers.filter(h => h.enabled && h.key).length}</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('body')}
+          className={`tab-item ${activeTab === 'body' ? 'active' : ''}`}
+        >
+          Body
+        </button>
+        <button
+          onClick={() => setActiveTab('auth')}
+          className={`tab-item ${activeTab === 'auth' ? 'active' : ''}`}
+        >
+          Auth
+          {request.auth.type !== 'none' && (
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 inline-block ml-1" />
+          )}
+        </button>
       </div>
 
       {/* Tab Panels */}
