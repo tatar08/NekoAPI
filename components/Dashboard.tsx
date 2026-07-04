@@ -19,7 +19,7 @@ interface RecentCollection {
 }
 
 interface DashboardProps {
-  setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard') => void;
+  setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard' | 'teams') => void;
 }
 
 interface Holiday {
