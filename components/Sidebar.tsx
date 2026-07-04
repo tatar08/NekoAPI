@@ -36,10 +36,12 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
     setActiveEnvironment,
     openTab,
     user,
-    setUser
+    setUser,
+    moveRequestToCollection
   } = useApiStore();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [newColName, setNewColName] = useState('');
   const [showAddCol, setShowAddCol] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -279,7 +281,36 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
     const isOwnerOrAdmin = col.userId === user?.id || user?.role === 'admin';
 
     return (
-      <div key={col.id} className="border border-white/[0.04] rounded-lg bg-white/[0.01] hover:bg-white/[0.015] transition duration-200 overflow-hidden shadow-sm">
+      <div 
+        key={col.id} 
+        className={`border rounded-lg transition duration-200 overflow-hidden shadow-sm ${
+          dragOverColId === col.id
+            ? 'border-violet-500 bg-violet-950/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]'
+            : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.015]'
+        }`}
+        onDragOver={(e) => {
+          e.preventDefault();
+        }}
+        onDragEnter={() => {
+          setDragOverColId(col.id);
+        }}
+        onDragLeave={() => {
+          setDragOverColId(null);
+        }}
+        onDrop={async (e) => {
+          e.preventDefault();
+          setDragOverColId(null);
+          try {
+            const dataStr = e.dataTransfer.getData('text/plain');
+            if (!dataStr) return;
+            const { reqId, sourceColId } = JSON.parse(dataStr);
+            if (sourceColId === col.id) return;
+            await moveRequestToCollection(reqId, sourceColId, col.id);
+          } catch (err) {
+            console.error(err);
+          }
+        }}
+      >
         
         {/* Collection Row Header */}
         <div 
@@ -472,13 +503,18 @@ export default function Sidebar({ activeView, setActiveView }: SidebarProps) {
               return (
                 <div
                   key={req.id}
-                  className={`flex items-center justify-between px-3 py-2.5 border-t border-white/[0.02] cursor-pointer group transition duration-150 ${
+                  className={`flex items-center justify-between px-3 py-2.5 border-t border-white/[0.02] cursor-pointer group transition duration-150 select-none ${
                     isTabActive ? 'bg-violet-950/20' : 'hover:bg-white/[0.02]'
                   }`}
                   style={{ borderLeft: isTabActive ? '2px solid var(--accent-primary)' : '2px solid transparent' }}
                   onClick={() => {
                     openTab(req.id);
                     setActiveView('workspace');
+                  }}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ reqId: req.id, sourceColId: col.id }));
+                    e.dataTransfer.effectAllowed = 'move';
                   }}
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden flex-1">

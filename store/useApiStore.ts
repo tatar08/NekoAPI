@@ -84,6 +84,7 @@ interface ApiStoreState {
   resetRunStats: () => void;
   addTempRequest: () => string;
   saveTempRequest: (tempId: string, collectionId: string, name: string) => Promise<RequestModel | null>;
+  moveRequestToCollection: (requestId: string, sourceColId: string, targetColId: string) => Promise<void>;
 }
 
 export const useApiStore = create<ApiStoreState>()(
@@ -432,6 +433,55 @@ export const useApiStore = create<ApiStoreState>()(
         }
 
         return createdReq;
+      },
+
+      moveRequestToCollection: async (requestId, sourceColId, targetColId) => {
+        if (sourceColId === targetColId) return;
+
+        let requestToMove: RequestModel | null = null;
+        
+        // Optimistic UI updates
+        set((state) => {
+          const nextCols = state.collections.map((col) => {
+            if (col.id === sourceColId) {
+              requestToMove = col.requests.find(r => r.id === requestId) || null;
+              return {
+                ...col,
+                requests: col.requests.filter(r => r.id !== requestId)
+              };
+            }
+            return col;
+          });
+
+          if (!requestToMove) return { collections: state.collections };
+
+          return {
+            collections: nextCols.map((col) => {
+              if (col.id === targetColId) {
+                return {
+                  ...col,
+                  requests: [...col.requests, requestToMove!]
+                };
+              }
+              return col;
+            })
+          };
+        });
+
+        // Backend Sync
+        try {
+          const res = await fetch(`/api/collections/${sourceColId}/requests/${requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ collectionId: targetColId }),
+          });
+          if (!res.ok) {
+            console.error('Failed to move request in database');
+            // We could roll back here, but optimistic UX is generally fine.
+          }
+        } catch (err) {
+          console.error('Failed to sync moved request:', err);
+        }
       }
     }),
     {

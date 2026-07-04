@@ -39,7 +39,7 @@ export async function PUT(
 
     const updates = await req.json();
 
-    const data: Record<string, string> = {};
+    const data: Record<string, any> = {};
     if ('name' in updates) data.name = updates.name;
     if ('method' in updates) data.method = updates.method;
     if ('url' in updates) data.url = updates.url;
@@ -48,6 +48,23 @@ export async function PUT(
     if ('headers' in updates) data.headers = JSON.stringify(updates.headers);
     if ('params' in updates) data.params = JSON.stringify(updates.params);
     if ('auth' in updates) data.auth = JSON.stringify(updates.auth);
+
+    if ('collectionId' in updates && updates.collectionId !== collectionId) {
+      // Verify access to the destination collection
+      const targetCol = await prisma.collection.findFirst({
+        where: {
+          id: updates.collectionId,
+          OR: [
+            { userId: user.id },
+            { isShared: true },
+          ],
+        },
+      });
+      if (!targetCol) {
+        return NextResponse.json({ error: 'Target collection not found or access denied' }, { status: 404 });
+      }
+      data.collectionId = updates.collectionId;
+    }
 
     const updated = await prisma.request.update({
       where: { id: reqId },
