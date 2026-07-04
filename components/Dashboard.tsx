@@ -22,6 +22,114 @@ interface DashboardProps {
   setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard') => void;
 }
 
+interface Holiday {
+  date: string;
+  name: string;
+  localName?: string;
+}
+
+const HOLIDAYS_2026: Record<string, Holiday[]> = {
+  TH: [
+    { date: '2026-01-01', name: "New Year's Day", localName: 'วันขึ้นปีใหม่' },
+    { date: '2026-03-03', name: 'Makha Bucha Day', localName: 'วันมาฆบูชา' },
+    { date: '2026-04-06', name: 'Chakri Memorial Day', localName: 'วันจักรี' },
+    { date: '2026-04-13', name: 'Songkran Festival', localName: 'วันสงกรานต์' },
+    { date: '2026-04-14', name: 'Songkran Festival', localName: 'วันสงกรานต์' },
+    { date: '2026-04-15', name: 'Songkran Festival', localName: 'วันสงกรานต์' },
+    { date: '2026-05-01', name: 'National Labour Day', localName: 'วันแรงงานแห่งชาติ' },
+    { date: '2026-05-04', name: 'Coronation Day', localName: 'วันฉัตรมงคล' },
+    { date: '2026-05-31', name: 'Visakha Bucha Day', localName: 'วันวิสาขบูชา' },
+    { date: '2026-06-03', name: "Queen Suthida's Birthday", localName: 'วันเฉลิมพระชนมพรรษาพระราชินี' },
+    { date: '2026-07-27', name: 'Asahna Bucha Day', localName: 'วันอาสาฬหบูชา' },
+    { date: '2026-07-28', name: "King Vajiralongkorn's Birthday", localName: 'วันเฉลิมพระชนมพรรษา ร.10' },
+    { date: '2026-08-12', name: "Mother's Day (Queen Sirikit's Birthday)", localName: 'วันแม่แห่งชาติ' },
+    { date: '2026-10-13', name: "King Bhumibol Memorial Day", localName: 'วันคล้ายวันสวรรคต ร.9' },
+    { date: '2026-10-23', name: 'Chulalongkorn Day', localName: 'วันปิยมหาราช' },
+    { date: '2026-12-05', name: "Father's Day (King Bhumibol's Birthday)", localName: 'วันพ่อแห่งชาติ' },
+    { date: '2026-12-10', name: 'Constitution Day', localName: 'วันรัฐธรรมนูญ' },
+    { date: '2026-12-31', name: "New Year's Eve", localName: 'วันสิ้นปี' },
+  ],
+  ID: [
+    { date: '2026-01-01', name: "New Year's Day" },
+    { date: '2026-01-19', name: "Isra Mi'raj" },
+    { date: '2026-02-17', name: "Chinese New Year" },
+    { date: '2026-03-19', name: "Hari Raya Nyepi" },
+    { date: '2026-04-03', name: "Good Friday" },
+    { date: '2026-04-05', name: "Easter Sunday" },
+    { date: '2026-04-20', name: "Hari Raya Idul Fitri" },
+    { date: '2026-04-21', name: "Hari Raya Idul Fitri" },
+    { date: '2026-05-01', name: "Labour Day" },
+    { date: '2026-05-14', name: "Ascension Day of Jesus Christ" },
+    { date: '2026-05-31', name: "Hari Raya Waisak" },
+    { date: '2026-06-01', name: "Pancasila Day" },
+    { date: '2026-06-27', name: "Hari Raya Idul Adha" },
+    { date: '2026-07-17', name: "Islamic New Year" },
+    { date: '2026-08-17', name: "Independence Day" },
+    { date: '2026-09-26', name: "Prophet Muhammad's Birthday" },
+    { date: '2026-12-25', name: "Christmas Day" },
+  ],
+  MY: [
+    { date: '2026-01-01', name: "New Year's Day" },
+    { date: '2026-02-17', name: "Chinese New Year" },
+    { date: '2026-02-18', name: "Chinese New Year (Day 2)" },
+    { date: '2026-03-31', name: "Nuzul Al-Quran" },
+    { date: '2026-04-20', name: "Hari Raya Aidilfitri" },
+    { date: '2026-04-21', name: "Hari Raya Aidilfitri (Day 2)" },
+    { date: '2026-05-01', name: "Labour Day" },
+    { date: '2026-05-31', name: "Wesak Day" },
+    { date: '2026-06-01', name: "Agong's Birthday" },
+    { date: '2026-06-27', name: "Hari Raya Aidiladha" },
+    { date: '2026-07-16', name: "Awal Muharram (Islamic New Year)" },
+    { date: '2026-08-31', name: "Merdeka Day (National Day)" },
+    { date: '2026-09-16', name: "Malaysia Day" },
+    { date: '2026-09-26', name: "Prophet Muhammad's Birthday" },
+    { date: '2026-12-25', name: "Christmas Day" },
+  ],
+  PH: [
+    { date: '2026-01-01', name: "New Year's Day" },
+    { date: '2026-02-17', name: "Chinese New Year" },
+    { date: '2026-02-25', name: "EDSA People Power Revolution Anniversary" },
+    { date: '2026-04-02', name: "Maundy Thursday" },
+    { date: '2026-04-03', name: "Good Friday" },
+    { date: '2026-04-04', name: "Black Saturday" },
+    { date: '2026-04-09', name: "Araw ng Kagitingan" },
+    { date: '2026-05-01', name: "Labour Day" },
+    { date: '2026-06-12', name: "Independence Day" },
+    { date: '2026-07-27', name: "Iglesia ni Cristo Day" },
+    { date: '2026-08-21', name: "Ninoy Aquino Day" },
+    { date: '2026-08-31', name: "National Heroes Day" },
+    { date: '2026-11-01', name: "All Saints' Day" },
+    { date: '2026-11-02', name: "All Souls' Day" },
+    { date: '2026-11-30', name: "Bonifacio Day" },
+    { date: '2026-12-08', name: "Feast of the Immaculate Conception" },
+    { date: '2026-12-25', name: "Christmas Day" },
+    { date: '2026-12-30', name: "Rizal Day" },
+    { date: '2026-12-31', name: "Last Day of the Year" },
+  ],
+  VN: [
+    { date: '2026-01-01', name: "New Year's Day", localName: 'Tết Dương Lịch' },
+    { date: '2026-02-16', name: "Vietnamese New Year (Tet Eve)", localName: 'Giao thừa Tết Nguyên Đán' },
+    { date: '2026-02-17', name: "Vietnamese New Year (Tet Day 1)", localName: 'Mùng 1 Tết Nguyên Đán' },
+    { date: '2026-02-18', name: "Vietnamese New Year (Tet Day 2)", localName: 'Mùng 2 Tết Nguyên Đán' },
+    { date: '2026-02-19', name: "Vietnamese New Year (Tet Day 3)", localName: 'Mùng 3 Tết Nguyên Đán' },
+    { date: '2026-04-26', name: "Hung Kings Commemoration Day", localName: 'Giỗ tổ Hùng Vương' },
+    { date: '2026-04-30', name: "Reunification Day", localName: 'Ngày Giải Phóng Miền Nam' },
+    { date: '2026-05-01', name: "International Labour Day", localName: 'Ngày Quốc tế Lao động' },
+    { date: '2026-09-02', name: "Independence Day", localName: 'Ngày Quốc Khánh' },
+  ]
+};
+
+const getWeatherDetails = (code: number) => {
+  if (code === 0) return { label: 'Clear Sky', icon: '☀️' };
+  if (code >= 1 && code <= 3) return { label: 'Partly Cloudy', icon: '⛅' };
+  if (code >= 45 && code <= 48) return { label: 'Foggy', icon: '🌫️' };
+  if (code >= 51 && code <= 67) return { label: 'Drizzle/Rain', icon: '🌧️' };
+  if (code >= 71 && code <= 77) return { label: 'Snowy', icon: '❄️' };
+  if (code >= 80 && code <= 82) return { label: 'Showers', icon: '🌧️' };
+  if (code >= 95 && code <= 99) return { label: 'Thunderstorm', icon: '⛈️' };
+  return { label: 'Overcast', icon: '☁️' };
+};
+
 const METHOD_COLORS: Record<string, { bg: string; text: string; glow: string }> = {
   GET: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', glow: 'shadow-[0_0_8px_rgba(16,185,129,0.2)]' },
   POST: { bg: 'bg-blue-500/15', text: 'text-blue-400', glow: 'shadow-[0_0_8px_rgba(59,130,246,0.2)]' },
@@ -37,10 +145,66 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
   const [recentCols, setRecentCols] = useState<RecentCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [weather, setWeather] = useState<{ temp: number; icon: string; label: string; location: string } | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [holidayCountry, setHolidayCountry] = useState<'TH' | 'ID' | 'MY' | 'PH' | 'VN'>('TH');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const fetchWeather = async () => {
+      try {
+        setWeatherLoading(true);
+        let lat = 13.7563;
+        let lon = 100.5018;
+        let locName = 'Bangkok, TH';
+
+        if (navigator.geolocation) {
+          await new Promise<void>((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const city = tz.split('/').pop()?.replace('_', ' ') || 'Local Area';
+                locName = `${city}`;
+                resolve();
+              },
+              () => {
+                resolve();
+              },
+              { timeout: 3000 }
+            );
+          });
+        }
+
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        if (res.ok) {
+          const data = await res.json();
+          const curr = data.current_weather;
+          const details = getWeatherDetails(curr.weathercode);
+          if (active) {
+            setWeather({
+              temp: Math.round(curr.temperature),
+              icon: details.icon,
+              label: details.label,
+              location: locName
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load weather:', err);
+      } finally {
+        if (active) setWeatherLoading(false);
+      }
+    };
+
+    fetchWeather();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -152,8 +316,12 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
             <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-1">
               {currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
-            <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-wide">
-              {greeting()}, {user?.username || 'User'} 🐱
+            <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-wide flex items-center gap-3">
+              <span>{greeting()}, {user?.username || 'User'} 🐱</span>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-white/[0.04] border border-white/[0.06] text-violet-300 rounded-lg flex items-center gap-1.5 shadow-sm">
+                <span>📅</span>
+                <span>{currentTime.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              </span>
             </h1>
             <p className="text-gray-500 text-xs mt-1">
               Welcome to your NekoAPI workspace dashboard. Here&apos;s an overview of your API testing activity.
@@ -171,6 +339,115 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
             }`}>
               {user?.role}
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Weather & Holidays Widgets Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-up">
+        {/* Weather Widget Card */}
+        <div className="bg-[#0e1017] border border-white/[0.04] p-5 rounded-xl shadow-md flex flex-col justify-between min-h-[120px] relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-amber-500/5 blur-[30px] pointer-events-none" />
+          
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Live Weather</span>
+              <span className="text-xs font-semibold text-gray-300 mt-1 flex items-center gap-1">
+                <span>📍</span>
+                <span className="truncate max-w-[150px]">{weatherLoading ? 'Detecting Location...' : weather?.location || 'Bangkok, TH'}</span>
+              </span>
+            </div>
+            {weatherLoading ? (
+              <div className="spinner w-4 h-4 border-2" />
+            ) : (
+              <span className="text-3xl" title={weather?.label}>{weather?.icon || '☁️'}</span>
+            )}
+          </div>
+
+          <div className="flex items-baseline gap-2 mt-4">
+            <span className="text-3xl font-black text-gray-150 tabular-nums">
+              {weatherLoading ? '--' : `${weather?.temp ?? 28}°C`}
+            </span>
+            <span className="text-xs text-gray-500 font-medium">
+              {weatherLoading ? 'Fetching forecast...' : weather?.label || 'Overcast'}
+            </span>
+          </div>
+        </div>
+
+        {/* Holidays Widget Card */}
+        <div className="bg-[#0e1017] border border-white/[0.04] p-5 rounded-xl shadow-md flex flex-col justify-between min-h-[120px] relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-violet-500/5 blur-[30px] pointer-events-none" />
+
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Public Holidays</span>
+              <span className="text-xs font-semibold text-gray-300 mt-1">
+                📅 Holidays in {holidayCountry === 'TH' ? 'Thailand' : holidayCountry === 'ID' ? 'Indonesia' : holidayCountry === 'MY' ? 'Malaysia' : holidayCountry === 'PH' ? 'Philippines' : 'Vietnam'}
+              </span>
+            </div>
+
+            {/* Country selector flag pills */}
+            <div className="flex gap-1.5 bg-[#161822] p-0.5 rounded-lg border border-white/[0.06] shadow-sm select-none">
+              {(['TH', 'ID', 'MY', 'PH', 'VN'] as const).map((code) => {
+                const flags = { TH: '🇹🇭', ID: '🇮🇩', MY: '🇲🇾', PH: '🇵🇭', VN: '🇻🇳' };
+                return (
+                  <button
+                    key={code}
+                    onClick={() => setHolidayCountry(code)}
+                    className={`px-1.5 py-0.5 rounded text-[11px] transition cursor-pointer hover:scale-110 active:scale-95 ${
+                      holidayCountry === code 
+                        ? 'bg-violet-600/30 border border-violet-500/40 shadow-sm' 
+                        : 'opacity-40 hover:opacity-100'
+                    }`}
+                    title={code === 'TH' ? 'Thailand' : code === 'ID' ? 'Indonesia' : code === 'MY' ? 'Malaysia' : code === 'PH' ? 'Philippines' : 'Vietnam'}
+                  >
+                    {flags[code]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-1.5">
+            {(() => {
+              const currentMonthNum = currentTime.getMonth();
+              const currentYearNum = currentTime.getFullYear();
+              const countryHolidays = HOLIDAYS_2026[holidayCountry] || [];
+              const currentMonthHolidays = countryHolidays.filter(h => {
+                const hDate = new Date(h.date);
+                return hDate.getMonth() === currentMonthNum && hDate.getFullYear() === currentYearNum;
+              });
+              const upcomingHolidays = countryHolidays.filter(h => {
+                const hDate = new Date(h.date);
+                return hDate >= new Date(currentTime.getFullYear(), currentTime.getMonth(), 1);
+              });
+              const nextHoliday = upcomingHolidays[0];
+
+              if (currentMonthHolidays.length > 0) {
+                return currentMonthHolidays.map((h, i) => (
+                  <div key={i} className="flex justify-between items-center text-xs bg-white/[0.02] px-2.5 py-1.5 rounded-lg border border-white/[0.02]">
+                    <span className="font-bold text-violet-300 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                      {new Date(h.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+                    </span>
+                    <span className="text-gray-450 font-medium truncate max-w-[180px]" title={h.localName || h.name}>
+                      {h.localName || h.name}
+                    </span>
+                  </div>
+                ));
+              }
+
+              return (
+                <div className="text-xs text-gray-500 italic py-1">
+                  No holidays this month.
+                  {nextHoliday && (
+                    <div className="mt-1 text-[11px] text-gray-400 not-italic">
+                      👉 Next: <span className="font-bold text-violet-300">{nextHoliday.localName || nextHoliday.name}</span> on {new Date(nextHoliday.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
