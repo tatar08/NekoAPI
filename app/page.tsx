@@ -376,8 +376,8 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Tabs Tracker */}
-            {tabs.length > 0 ? (
-              <div className="flex border-b border-white/[0.04] bg-[#0c0e15] overflow-x-auto select-none no-scrollbar h-[39px]">
+            <div className="flex items-center justify-between border-b border-white/[0.04] bg-[#0c0e15] select-none h-[39px] w-full">
+              <div className="flex flex-1 overflow-x-auto no-scrollbar h-full items-center">
                 {tabs.map((tabId) => {
                   const req = collections.flatMap(c => c.requests).find(r => r.id === tabId);
                   if (!req) return null;
@@ -416,8 +416,19 @@ export default function DashboardPage() {
                     </div>
                   );
                 })}
+
+                {/* Add Request (+) Tab Button */}
+                <button
+                  onClick={handleCreateRequestClick}
+                  className="px-3.5 h-full flex items-center justify-center text-gray-400 hover:text-violet-400 hover:bg-white/[0.02] border-r border-white/[0.03] transition duration-150 cursor-pointer"
+                  title="Create New Request"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               </div>
-            ) : null}
+            </div>
 
             {/* Content view Workspace pane */}
             {activeRequest ? (
