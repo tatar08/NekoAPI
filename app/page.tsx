@@ -323,6 +323,16 @@ export default function DashboardPage() {
         {/* User Profile & Logout Panel */}
         {user && (
           <div className="p-4 border-t border-white/[0.04] bg-white/[0.002] flex flex-col gap-2.5 animate-fade-in">
+            {user.role === 'admin' && (
+              <button
+                onClick={() => setActiveView('admin')}
+                className="w-full px-3 py-2 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/10 hover:border-amber-500/30 text-amber-400 hover:text-amber-300 rounded-lg text-[9px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
+              >
+                <span>🛡️</span>
+                <span>Open Admin Panel</span>
+              </button>
+            )}
+
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 overflow-hidden">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white uppercase shadow-[0_0_8px_rgba(99,102,241,0.2)]">
@@ -341,16 +351,6 @@ export default function DashboardPage() {
                 Logout
               </button>
             </div>
-
-            {user.role === 'admin' && (
-              <button
-                onClick={() => setActiveView('admin')}
-                className="w-full px-3 py-2 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/10 hover:border-amber-500/30 text-amber-400 hover:text-amber-300 rounded-lg text-[9px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
-              >
-                <span>🛡️</span>
-                <span>Open Admin Panel</span>
-              </button>
-            )}
           </div>
         )}
       </aside>
