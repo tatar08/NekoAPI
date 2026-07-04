@@ -116,6 +116,19 @@ const HOLIDAYS_2026: Record<string, Holiday[]> = {
     { date: '2026-04-30', name: "Reunification Day", localName: 'Ngày Giải Phóng Miền Nam' },
     { date: '2026-05-01', name: "International Labour Day", localName: 'Ngày Quốc tế Lao động' },
     { date: '2026-09-02', name: "Independence Day", localName: 'Ngày Quốc Khánh' },
+  ],
+  SG: [
+    { date: '2026-01-01', name: "New Year's Day" },
+    { date: '2026-02-17', name: "Chinese New Year" },
+    { date: '2026-02-18', name: "Chinese New Year (Day 2)" },
+    { date: '2026-04-03', name: "Good Friday" },
+    { date: '2026-04-20', name: "Hari Raya Puasa" },
+    { date: '2026-05-01', name: "Labour Day" },
+    { date: '2026-05-31', name: "Vesak Day" },
+    { date: '2026-06-27', name: "Hari Raya Haji" },
+    { date: '2026-08-09', name: "National Day" },
+    { date: '2026-11-08', name: "Deepavali" },
+    { date: '2026-12-25', name: "Christmas Day" },
   ]
 };
 
@@ -147,7 +160,7 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [weather, setWeather] = useState<{ temp: number; icon: string; label: string; location: string } | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
-  const [holidayCountry, setHolidayCountry] = useState<'TH' | 'ID' | 'MY' | 'PH' | 'VN'>('TH');
+  const [holidayCountry, setHolidayCountry] = useState<'TH' | 'ID' | 'MY' | 'PH' | 'SG' | 'VN'>('TH');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -382,14 +395,14 @@ export default function Dashboard({ setActiveView }: DashboardProps) {
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Public Holidays</span>
               <span className="text-xs font-semibold text-gray-300 mt-1">
-                📅 Holidays in {holidayCountry === 'TH' ? 'Thailand' : holidayCountry === 'ID' ? 'Indonesia' : holidayCountry === 'MY' ? 'Malaysia' : holidayCountry === 'PH' ? 'Philippines' : 'Vietnam'}
+                📅 Holidays in {holidayCountry === 'TH' ? 'Thailand' : holidayCountry === 'ID' ? 'Indonesia' : holidayCountry === 'MY' ? 'Malaysia' : holidayCountry === 'PH' ? 'Philippines' : holidayCountry === 'SG' ? 'Singapore' : 'Vietnam'}
               </span>
             </div>
 
             {/* Country selector flag pills */}
             <div className="flex gap-1.5 bg-[#161822] p-0.5 rounded-lg border border-white/[0.06] shadow-sm select-none">
-              {(['TH', 'ID', 'MY', 'PH', 'VN'] as const).map((code) => {
-                const flags = { TH: '🇹🇭', ID: '🇮🇩', MY: '🇲🇾', PH: '🇵🇭', VN: '🇻🇳' };
+              {(['TH', 'ID', 'MY', 'PH', 'SG', 'VN'] as const).map((code) => {
+                const flags = { TH: '🇹🇭', ID: '🇮🇩', MY: '🇲🇾', PH: '🇵🇭', SG: '🇸🇬', VN: '🇻🇳' };
                 return (
                   <button
                     key={code}
