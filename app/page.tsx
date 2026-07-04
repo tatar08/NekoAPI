@@ -11,11 +11,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AdminPanel from '@/components/AdminPanel';
 import Dashboard from '@/components/Dashboard';
+import TeamPanel from '@/components/TeamPanel';
 import Swal from 'sweetalert2';
 
 export default function DashboardPage() {
   const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading, addCollection, addRequestToCollection, tempRequests, addTempRequest } = useApiStore();
-  const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard'>('dashboard');
+  const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard' | 'teams'>('dashboard');
   const router = useRouter();
 
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -47,6 +48,20 @@ export default function DashboardPage() {
     }
   };
 
+  const [inviteCount, setInviteCount] = useState(0);
+
+  const fetchInviteCount = async () => {
+    try {
+      const res = await fetch('/api/teams/invitations');
+      if (res.ok) {
+        const data = await res.json();
+        setInviteCount(data.invitations?.length || 0);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => {
@@ -65,6 +80,14 @@ export default function DashboardPage() {
         router.push('/login');
       });
   }, [setUser, fetchData, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchInviteCount();
+      const interval = setInterval(fetchInviteCount, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   // Helper to locate active request data across collections and temporary drafts
   const activeRequest = collections
@@ -323,6 +346,23 @@ export default function DashboardPage() {
         {/* User Profile & Logout Panel */}
         {user && (
           <div className="p-4 border-t border-white/[0.04] bg-white/[0.002] flex flex-col gap-2.5 animate-fade-in">
+            <button
+              onClick={() => setActiveView('teams')}
+              className={`w-full px-3 py-2 border rounded-lg text-[9px] font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98 ${
+                activeView === 'teams'
+                  ? 'bg-violet-600/20 border-violet-500/40 text-violet-300 shadow-[0_0_8px_rgba(139,92,246,0.15)]'
+                  : 'bg-white/[0.02] hover:bg-white/[0.06] border-white/[0.06] text-gray-300 hover:text-white'
+              }`}
+            >
+              <span>👥</span>
+              <span>Manage Teams</span>
+              {inviteCount > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[8px] font-extrabold animate-pulse shadow-sm">
+                  {inviteCount}
+                </span>
+              )}
+            </button>
+
             {user.role === 'admin' && (
               <button
                 onClick={() => setActiveView('admin')}
@@ -369,6 +409,10 @@ export default function DashboardPage() {
         ) : activeView === 'admin' ? (
           <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">
             <AdminPanel />
+          </div>
+        ) : activeView === 'teams' ? (
+          <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">
+            <TeamPanel />
           </div>
         ) : activeView === 'dashboard' ? (
           <div className="flex-1 overflow-auto p-8 bg-[#0c0d14]/30 animate-fade-up">

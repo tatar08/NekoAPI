@@ -6,8 +6,8 @@ import { nekoConfirm, nekoAlert } from '@/lib/alert';
 import Swal from 'sweetalert2';
 
 interface SidebarProps {
-  activeView: 'workspace' | 'runner' | 'admin' | 'dashboard';
-  setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard') => void;
+  activeView: 'workspace' | 'runner' | 'admin' | 'dashboard' | 'teams';
+  setActiveView: (view: 'workspace' | 'runner' | 'admin' | 'dashboard' | 'teams') => void;
 }
 
 const NEW_REQ_METHOD_COLORS: Record<string, string> = {
