@@ -31,6 +31,7 @@ export interface RequestModel {
     time: number;
     size: number;
   };
+  isPinned?: boolean;
 }
 
 export interface Collection {
@@ -85,6 +86,7 @@ interface ApiStoreState {
   addTempRequest: () => string;
   saveTempRequest: (tempId: string, collectionId: string, name: string) => Promise<RequestModel | null>;
   moveRequestToCollection: (requestId: string, sourceColId: string, targetColId: string) => Promise<void>;
+  togglePinRequest: (requestId: string, collectionId: string) => Promise<void>;
 }
 
 export const useApiStore = create<ApiStoreState>()(
@@ -468,7 +470,6 @@ export const useApiStore = create<ApiStoreState>()(
           };
         });
 
-        // Backend Sync
         try {
           const res = await fetch(`/api/collections/${sourceColId}/requests/${requestId}`, {
             method: 'PUT',
@@ -477,10 +478,44 @@ export const useApiStore = create<ApiStoreState>()(
           });
           if (!res.ok) {
             console.error('Failed to move request in database');
-            // We could roll back here, but optimistic UX is generally fine.
           }
         } catch (err) {
           console.error('Failed to sync moved request:', err);
+        }
+      },
+      togglePinRequest: async (requestId: string, collectionId: string) => {
+        const { collections } = get();
+        const col = collections.find(c => c.id === collectionId);
+        if (!col) return;
+        const req = col.requests.find(r => r.id === requestId);
+        if (!req) return;
+        
+        const nextPinned = !req.isPinned;
+        
+        // Optimistic UI update
+        set({
+          collections: collections.map(c => c.id === collectionId ? {
+            ...c,
+            requests: c.requests.map(r => r.id === requestId ? { ...r, isPinned: nextPinned } : r)
+          } : c)
+        });
+
+        try {
+          const res = await fetch(`/api/collections/${collectionId}/requests/${requestId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isPinned: nextPinned })
+          });
+          if (!res.ok) throw new Error();
+        } catch (err) {
+          console.error('Failed to sync pinned status:', err);
+          // Rollback on failure
+          set({
+            collections: collections.map(c => c.id === collectionId ? {
+              ...c,
+              requests: c.requests.map(r => r.id === requestId ? { ...r, isPinned: !nextPinned } : r)
+            } : c)
+          });
         }
       }
     }),

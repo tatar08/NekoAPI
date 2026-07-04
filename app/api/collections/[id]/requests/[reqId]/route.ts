@@ -48,6 +48,7 @@ export async function PUT(
     if ('headers' in updates) data.headers = JSON.stringify(updates.headers);
     if ('params' in updates) data.params = JSON.stringify(updates.params);
     if ('auth' in updates) data.auth = JSON.stringify(updates.auth);
+    if ('isPinned' in updates) data.isPinned = updates.isPinned;
 
     if ('collectionId' in updates && updates.collectionId !== collectionId) {
       // Verify access to the destination collection
