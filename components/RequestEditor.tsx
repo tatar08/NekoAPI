@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { RequestModel, useApiStore, KeyValueItem } from '@/store/useApiStore';
 import { resolveVariables } from '@/utils/variableResolver';
+import Swal from 'sweetalert2';
 
 interface RequestEditorProps {
   request: RequestModel;
@@ -11,9 +12,104 @@ interface RequestEditorProps {
 type EditorTab = 'params' | 'headers' | 'body' | 'auth';
 
 export default function RequestEditor({ request }: RequestEditorProps) {
-  const { updateRequest, environments, activeEnvironmentId } = useApiStore();
+  const { updateRequest, environments, activeEnvironmentId, collections, addCollection, saveTempRequest } = useApiStore();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<EditorTab>('params');
+
+  const handleSaveTempRequest = async () => {
+    if (collections.length === 0) {
+      const { value: colName } = await Swal.fire({
+        title: 'Create Collection First',
+        text: 'To save this request, you need to create a collection first. Please enter a name:',
+        input: 'text',
+        inputPlaceholder: 'e.g. My API Collection',
+        showCancelButton: true,
+        background: '#0c0d14',
+        color: '#e2e8f0',
+        confirmButtonText: 'Create Collection',
+        customClass: {
+          popup: 'border border-white/[0.06] rounded-2xl shadow-2xl backdrop-blur-2xl font-sans',
+          title: 'text-base font-bold text-white pt-4',
+          htmlContainer: 'text-xs text-gray-400 mt-2',
+          input: 'bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-4 py-2 text-white outline-none text-xs w-5/6 mx-auto',
+          confirmButton: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 shadow-[0_0_12px_rgba(139,92,246,0.3)]',
+          cancelButton: 'px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-gray-300 text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 ml-3',
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+          if (!value.trim()) return 'Collection name cannot be empty!';
+          return null;
+        }
+      });
+      if (!colName || !colName.trim()) return;
+      const newCol = await addCollection(colName.trim());
+      if (newCol) {
+        await saveTempRequest(request.id, newCol.id, request.name);
+        Swal.fire({
+          icon: 'success',
+          title: 'Request Saved',
+          text: `Saved to collection "${newCol.name}"!`,
+          background: '#0c0d14',
+          color: '#e2e8f0',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } else {
+      const colOptions = collections.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      const { value: formValues } = await Swal.fire({
+        title: 'Save Request',
+        html: `
+          <div class="flex flex-col gap-3 text-left">
+            <div>
+              <label class="text-[10px] uppercase font-bold text-gray-400">Request Name</label>
+              <input id="swal-req-name" class="w-full mt-1 bg-[#090a0f] border border-white/[0.06] focus:border-violet-500/50 rounded-xl px-4 py-2 text-white outline-none text-xs" value="${request.name}" />
+            </div>
+            <div>
+              <label class="text-[10px] uppercase font-bold text-gray-400">Target Collection</label>
+              <select id="swal-req-col" class="w-full mt-1 bg-[#090a0f] border border-white/[0.06] rounded-xl px-4 py-2 text-white outline-none text-xs cursor-pointer">
+                ${colOptions}
+              </select>
+            </div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Save Request',
+        background: '#0c0d14',
+        color: '#e2e8f0',
+        customClass: {
+          popup: 'border border-white/[0.06] rounded-2xl shadow-2xl backdrop-blur-2xl font-sans p-6 w-[360px]',
+          title: 'text-base font-bold text-white pt-2',
+          confirmButton: 'px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 shadow-[0_0_12px_rgba(139,92,246,0.3)]',
+          cancelButton: 'px-4 py-2 bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] text-gray-300 text-xs font-bold rounded-xl cursor-pointer transition active:scale-95 ml-3',
+        },
+        buttonsStyling: false,
+        preConfirm: () => {
+          const reqName = (document.getElementById('swal-req-name') as HTMLInputElement).value;
+          const colId = (document.getElementById('swal-req-col') as HTMLSelectElement).value;
+          if (!reqName.trim()) {
+            Swal.showValidationMessage('Request name cannot be empty!');
+          }
+          return { reqName, colId };
+        }
+      });
+
+      if (formValues) {
+        const { reqName, colId } = formValues;
+        await saveTempRequest(request.id, colId, reqName);
+        Swal.fire({
+          icon: 'success',
+          title: 'Request Saved',
+          text: 'The request has been saved successfully!',
+          background: '#0c0d14',
+          color: '#e2e8f0',
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    }
+  };
   
   const activeEnv = environments.find(e => e.id === activeEnvironmentId);
 
@@ -162,36 +258,49 @@ export default function RequestEditor({ request }: RequestEditorProps) {
       </div>
 
       {/* Editor Sections Navigation Tabs */}
-      <div className="flex border-b border-white/[0.04]">
-        <button
-          onClick={() => setActiveTab('params')}
-          className={`tab-item ${activeTab === 'params' ? 'active' : ''}`}
-        >
-          Params
-          <span className="tab-count">{request.params.filter(p => p.enabled && p.key).length}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('headers')}
-          className={`tab-item ${activeTab === 'headers' ? 'active' : ''}`}
-        >
-          Headers
-          <span className="tab-count">{request.headers.filter(h => h.enabled && h.key).length}</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('body')}
-          className={`tab-item ${activeTab === 'body' ? 'active' : ''}`}
-        >
-          Body
-        </button>
-        <button
-          onClick={() => setActiveTab('auth')}
-          className={`tab-item ${activeTab === 'auth' ? 'active' : ''}`}
-        >
-          Auth
-          {request.auth.type !== 'none' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 inline-block ml-1" />
-          )}
-        </button>
+      <div className="flex justify-between items-center border-b border-white/[0.04]">
+        <div className="flex flex-1 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveTab('params')}
+            className={`tab-item ${activeTab === 'params' ? 'active' : ''}`}
+          >
+            Params
+            <span className="tab-count">{request.params.filter(p => p.enabled && p.key).length}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('headers')}
+            className={`tab-item ${activeTab === 'headers' ? 'active' : ''}`}
+          >
+            Headers
+            <span className="tab-count">{request.headers.filter(h => h.enabled && h.key).length}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('body')}
+            className={`tab-item ${activeTab === 'body' ? 'active' : ''}`}
+          >
+            Body
+          </button>
+          <button
+            onClick={() => setActiveTab('auth')}
+            className={`tab-item ${activeTab === 'auth' ? 'active' : ''}`}
+          >
+            Auth
+            {request.auth.type !== 'none' && (
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 inline-block ml-1" />
+            )}
+          </button>
+        </div>
+
+        {request.id.startsWith('temp-') && (
+          <button
+            onClick={handleSaveTempRequest}
+            className="mb-1.5 px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-400 hover:text-amber-300 rounded-md text-[10px] font-bold uppercase tracking-wider transition duration-150 cursor-pointer shadow-sm active:scale-95 flex items-center gap-1 mr-1"
+            title="Save Request to Collection"
+          >
+            <span>💾</span>
+            <span>Save</span>
+          </button>
+        )}
       </div>
 
       {/* Tab Panels */}

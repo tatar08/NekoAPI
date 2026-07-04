@@ -58,6 +58,7 @@ interface ApiStoreState {
   history: { requestId: string; timestamp: number }[];
   passedRunsCount: number;
   failedRunsCount: number;
+  tempRequests: RequestModel[]; // List of active temporary unsaved Requests
   
   // Actions
   setUser: (user: { id: string; username: string; role: string } | null) => void;
@@ -81,6 +82,8 @@ interface ApiStoreState {
   incrementPassedRuns: (count?: number) => void;
   incrementFailedRuns: (count?: number) => void;
   resetRunStats: () => void;
+  addTempRequest: () => string;
+  saveTempRequest: (tempId: string, collectionId: string, name: string) => Promise<RequestModel | null>;
 }
 
 export const useApiStore = create<ApiStoreState>()(
@@ -96,6 +99,7 @@ export const useApiStore = create<ApiStoreState>()(
       history: [],
       passedRunsCount: 0,
       failedRunsCount: 0,
+      tempRequests: [],
 
       setUser: (user) => set({ user }),
 
@@ -233,6 +237,15 @@ export const useApiStore = create<ApiStoreState>()(
       },
 
       updateRequest: async (requestId, updates) => {
+        if (requestId.startsWith('temp-')) {
+          set((state) => ({
+            tempRequests: (state.tempRequests || []).map((req) =>
+              req.id === requestId ? { ...req, ...updates } : req
+            )
+          }));
+          return;
+        }
+
         let colId = '';
         set((state) => {
           state.collections.forEach(c => {
@@ -349,9 +362,15 @@ export const useApiStore = create<ApiStoreState>()(
         if (state.activeTabId === requestId) {
           nextActive = nextTabs.length > 0 ? nextTabs[nextTabs.length - 1] : null;
         }
+        
+        const nextTempReqs = requestId.startsWith('temp-')
+          ? (state.tempRequests || []).filter(r => r.id !== requestId)
+          : (state.tempRequests || []);
+
         return {
           tabs: nextTabs,
-          activeTabId: nextActive
+          activeTabId: nextActive,
+          tempRequests: nextTempReqs
         };
       }),
 
@@ -362,7 +381,58 @@ export const useApiStore = create<ApiStoreState>()(
       incrementFailedRuns: (count = 1) => set((state) => ({
         failedRunsCount: state.failedRunsCount + count
       })),
-      resetRunStats: () => set({ passedRunsCount: 0, failedRunsCount: 0 })
+      resetRunStats: () => set({ passedRunsCount: 0, failedRunsCount: 0 }),
+
+      addTempRequest: () => {
+        const tempId = `temp-${crypto.randomUUID()}`;
+        const defaultReq: RequestModel = {
+          id: tempId,
+          name: 'Untitled Request',
+          method: 'GET',
+          url: '',
+          headers: [],
+          params: [],
+          bodyType: 'none',
+          body: '',
+          auth: { type: 'none' },
+        };
+        set((state) => ({
+          tempRequests: [...(state.tempRequests || []), defaultReq],
+          tabs: [...state.tabs, tempId],
+          activeTabId: tempId
+        }));
+        return tempId;
+      },
+
+      saveTempRequest: async (tempId, collectionId, name) => {
+        const tempReq = (get().tempRequests || []).find(r => r.id === tempId);
+        if (!tempReq) return null;
+
+        const createdReq = await get().addRequestToCollection(collectionId, {
+          name: name,
+          method: tempReq.method,
+          url: tempReq.url,
+          headers: tempReq.headers,
+          params: tempReq.params,
+          bodyType: tempReq.bodyType,
+          body: tempReq.body,
+          auth: tempReq.auth
+        });
+
+        if (createdReq) {
+          set((state) => {
+            const nextTabs = state.tabs.map(t => t === tempId ? createdReq.id : t);
+            const nextTempReqs = (state.tempRequests || []).filter(r => r.id !== tempId);
+            return {
+              tabs: nextTabs,
+              activeTabId: state.activeTabId === tempId ? createdReq.id : state.activeTabId,
+              tempRequests: nextTempReqs
+            };
+          });
+        }
+
+        return createdReq;
+      }
     }),
     {
       name: 'api-client-storage', // saves tabs and environment selections locally
@@ -371,7 +441,8 @@ export const useApiStore = create<ApiStoreState>()(
         tabs: state.tabs,
         activeTabId: state.activeTabId,
         passedRunsCount: state.passedRunsCount,
-        failedRunsCount: state.failedRunsCount
+        failedRunsCount: state.failedRunsCount,
+        tempRequests: state.tempRequests || []
       })
     }
   )

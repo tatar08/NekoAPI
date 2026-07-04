@@ -14,7 +14,7 @@ import Dashboard from '@/components/Dashboard';
 import Swal from 'sweetalert2';
 
 export default function DashboardPage() {
-  const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading, addCollection, addRequestToCollection } = useApiStore();
+  const { tabs, activeTabId, collections, setActiveTab, closeTab, user, setUser, fetchData, loading, addCollection, addRequestToCollection, tempRequests, addTempRequest } = useApiStore();
   const [activeView, setActiveView] = useState<'workspace' | 'runner' | 'admin' | 'dashboard'>('dashboard');
   const router = useRouter();
 
@@ -66,10 +66,11 @@ export default function DashboardPage() {
       });
   }, [setUser, fetchData, router]);
 
-  // Helper to locate active request data across collections
+  // Helper to locate active request data across collections and temporary drafts
   const activeRequest = collections
     .flatMap((c) => c.requests)
-    .find((r) => r.id === activeTabId);
+    .find((r) => r.id === activeTabId)
+    || (tempRequests || []).find((r) => r.id === activeTabId);
 
   const getMethodDotClass = (method: string) => {
     switch (method) {
@@ -379,7 +380,8 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between border-b border-white/[0.04] bg-[#0c0e15] select-none h-[39px] w-full">
               <div className="flex flex-1 overflow-x-auto no-scrollbar h-full items-center">
                 {tabs.map((tabId) => {
-                  const req = collections.flatMap(c => c.requests).find(r => r.id === tabId);
+                  const req = collections.flatMap(c => c.requests).find(r => r.id === tabId)
+                    || (tempRequests || []).find(r => r.id === tabId);
                   if (!req) return null;
                   const isActive = activeTabId === tabId;
 
@@ -419,7 +421,7 @@ export default function DashboardPage() {
 
                 {/* Add Request (+) Tab Button */}
                 <button
-                  onClick={handleCreateRequestClick}
+                  onClick={addTempRequest}
                   className="px-3.5 h-full flex items-center justify-center text-gray-400 hover:text-violet-400 hover:bg-white/[0.02] border-r border-white/[0.03] transition duration-150 cursor-pointer"
                   title="Create New Request"
                 >
